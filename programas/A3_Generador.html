@@ -435,14 +435,11 @@ async function callGemini(apiKey, promptText) {
   }
   throw lastError || new Error('Todos los modelos están saturados. Espera unos minutos e intenta de nuevo.');
 }
-const DEFAULT_API_KEY = 'AQ.Ab8RN6L4xPJ2gTMnJV-hGA9pmZVOUR3FbpOVqt2ZNOXBVwKs8w';
-
 function getSavedApiKey() {
   try {
-    const saved = localStorage.getItem('a3_gemini_key');
-    return saved || DEFAULT_API_KEY;
+    return localStorage.getItem('a3_gemini_key') || '';
   } catch (e) {
-    return DEFAULT_API_KEY;
+    return '';
   }
 }
 function saveApiKey(key) {
