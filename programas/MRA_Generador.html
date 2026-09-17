@@ -14,7 +14,7 @@ html[data-theme="light"]{
   --bottom-btn-bg:#e8ebee; --bottom-btn-text:#333; --bottom-btn-border:#d0d5da;
   --note-bg:#fff8e6; --note-border:#f0dfa8;
   --photo-bg:#f0f4f8; --photo-border:#bbc8d4; --photo-hover:#e0eaf3;
-  --section-label:#223b6f; --warn-color:#a35a00;
+  --section-label:#223b6f; --warn-color:#a35a00; --chip-bg:#eef1f6; --chip-on-bg:#223b6f; --chip-on-text:#fff;
   --score-ok:#c8ecc9; --score-low:#e5f3c0; --score-med:#ffe6b0; --score-high:#ffd0c0; --score-crit:#ffb3b3;
   --score-ok-text:#1b6b1e; --score-low-text:#5a6b12; --score-med-text:#8a5a00; --score-high-text:#a13c1a; --score-crit-text:#8a1414;
 }
@@ -25,25 +25,27 @@ html[data-theme="dark"]{
   --bottom-btn-bg:#262626; --bottom-btn-text:#ddd; --bottom-btn-border:#444;
   --note-bg:#262620; --note-border:#55503a;
   --photo-bg:#1a1a1a; --photo-border:#444; --photo-hover:#252525;
-  --section-label:#aaa; --warn-color:#c98a2e;
+  --section-label:#aaa; --warn-color:#c98a2e; --chip-bg:#2a2a2a; --chip-on-bg:#4a4a4a; --chip-on-text:#fff;
   --score-ok:#1c3a1d; --score-low:#3a3b1a; --score-med:#3f2f10; --score-high:#3f2116; --score-crit:#3f1414;
   --score-ok-text:#7fd27f; --score-low-text:#d8dd8f; --score-med-text:#e8b464; --score-high-text:#e88a64; --score-crit-text:#f07a7a;
 }
 *{box-sizing:border-box;}
 body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
 header{background:var(--header-bg);color:var(--header-text);padding:14px 28px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.3);}
-.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
 header .brand-title{font-size:20px;font-weight:700;letter-spacing:.5px;}
-.wrap{max-width:1100px;margin:24px auto 60px;padding:0 20px;display:grid;gap:20px;}
+.wrap{max-width:1300px;margin:24px auto 60px;padding:0 20px;display:grid;gap:20px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;}
 .card h2{margin-top:0;font-size:16px;color:var(--text);display:flex;align-items:center;gap:8px;}
 .step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--btn-secondary-bg);color:var(--btn-secondary-text);font-size:13px;flex-shrink:0;}
 .help{font-size:13px;color:var(--muted);margin:8px 0 14px;line-height:1.5;}
-input[type=text], input[type=date], textarea, select{width:100%;font-family:inherit;font-size:13.5px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text);}
+.guide-points{font-size:12.5px;color:var(--muted);margin:8px 0 12px;padding-left:18px;line-height:1.55;}
+.guide-points li{margin-bottom:2px;}
+input[type=text], input[type=date], textarea, select{width:100%;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--input-bg);color:var(--text);}
 textarea{resize:vertical;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:3px;}
 .field{margin-bottom:2px;}
 button{cursor:pointer;font-family:inherit;}
 button#btnIA{background:var(--btn-secondary-bg);color:var(--btn-secondary-text);border:none;padding:11px 20px;font-size:14px;font-weight:600;border-radius:8px;}
@@ -51,7 +53,7 @@ button#btnIA:disabled{opacity:.6;cursor:default;}
 button#btnGenerar{background:var(--btn-primary-bg);color:var(--btn-primary-text);border:none;padding:13px 26px;font-size:15px;font-weight:600;border-radius:8px;}
 button#btnGenerar:disabled{opacity:.6;cursor:default;}
 button.ghost{background:var(--bottom-btn-bg);color:var(--bottom-btn-text);border:1px solid var(--bottom-btn-border);padding:9px 16px;border-radius:7px;font-size:13px;}
-button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--bottom-btn-bg);color:var(--bottom-btn-text);border:1px solid var(--bottom-btn-border);}
+button.small{padding:5px 9px;font-size:11.5px;border-radius:6px;background:var(--bottom-btn-bg);color:var(--bottom-btn-text);border:1px solid var(--bottom-btn-border);}
 .ia-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;}
 #apiKeyPanel{margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);display:flex;flex-direction:column;gap:6px;max-width:480px;}
 #apiKeyPanel label{font-size:12.5px;color:var(--muted);}
@@ -60,33 +62,41 @@ button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--
 .status .ok{color:#4ccc4e;}
 .status .err{background:rgba(230,60,60,.12);border:1px solid rgba(230,60,60,.4);color:#e64c4c;padding:8px 10px;border-radius:6px;}
 .status .info{color:var(--muted);}
-/* CARDS DE RIESGO */
-.risk-card{border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;background:var(--input-bg);}
-.risk-card .risk-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.paste-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* CARDS DE RIESGO — layout compacto horizontal */
+.risk-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:var(--input-bg);}
+.risk-card .risk-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .risk-head .badge{font-size:12px;background:var(--btn-secondary-bg);color:var(--btn-secondary-text);border-radius:20px;padding:3px 10px;}
-.risk-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:10px;}
-.stage-box{border:1px dashed var(--border);border-radius:8px;padding:10px;margin-top:8px;}
-.stage-box .stage-title{font-size:12px;font-weight:600;color:var(--section-label);margin-bottom:8px;}
-.score-pill{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px;padding:7px 14px;border-radius:8px;margin-top:6px;}
+.rc-grid{display:grid;grid-template-columns:1.1fr 1.1fr 1.4fr 0.9fr;gap:10px;align-items:start;}
+.rc-col{min-width:0;}
+.rc-photos{display:flex;flex-direction:column;gap:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+.chip{font-size:11.5px;padding:4px 9px;border-radius:14px;background:var(--chip-bg);border:1px solid var(--border);cursor:pointer;user-select:none;}
+.chip.on{background:var(--chip-on-bg);color:var(--chip-on-text);border-color:var(--chip-on-bg);}
+.stage-strip{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:4px;}
+.stage-title{font-size:11px;font-weight:600;color:var(--section-label);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.3px;}
+.iso-strip{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;margin-top:4px;}
+.score-pill{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;padding:5px 10px;border-radius:7px;margin-top:6px;white-space:nowrap;}
 .score-ok{background:var(--score-ok);color:var(--score-ok-text);}
 .score-low{background:var(--score-low);color:var(--score-low-text);}
 .score-med{background:var(--score-med);color:var(--score-med-text);}
 .score-high{background:var(--score-high);color:var(--score-high-text);}
 .score-crit{background:var(--score-crit);color:var(--score-crit-text);}
-.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
-.photo-slot{position:relative;border:2px dashed var(--photo-border);border-radius:8px;background:var(--photo-bg);cursor:pointer;overflow:hidden;aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+.photo-slot{position:relative;border:2px dashed var(--photo-border);border-radius:8px;background:var(--photo-bg);cursor:pointer;overflow:hidden;height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
 .photo-slot:hover{background:var(--photo-hover);border-color:var(--btn-secondary-bg);}
 .photo-slot.has-img{border-style:solid;border-color:var(--btn-secondary-bg);}
-.photo-slot .slot-label{font-size:11px;color:var(--muted);pointer-events:none;text-align:center;padding:0 6px;}
+.photo-slot .slot-label{font-size:10.5px;color:var(--muted);pointer-events:none;text-align:center;padding:0 6px;}
 .photo-slot img.preview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}
-.photo-slot .remove-btn{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;z-index:2;}
+.photo-slot .remove-btn{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;z-index:2;}
 .photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.risk-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
-.toggle-stages{font-size:12px;color:var(--section-label);cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block;}
+.photo-slot.active-paste{border-color:#e6b800;box-shadow:0 0 0 2px rgba(230,184,0,.3);}
+.note-mini{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4;}
 .add-btn-row{display:flex;justify-content:center;margin-top:10px;}
 .add-circle{width:44px;height:44px;border-radius:50%;background:var(--btn-secondary-bg);color:var(--btn-secondary-text);border:none;font-size:22px;}
 #warnings .warn{background:rgba(193,140,40,.12);border:1px solid rgba(193,140,40,.4);color:var(--warn-color);padding:12px 14px;border-radius:8px;font-size:13.5px;}
 #warnings ul{margin:6px 0 0;padding-left:18px;}
+.risk-actions{display:flex;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -100,7 +110,7 @@ button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--
   <div class="card">
     <h2><span class="step-num">1</span> Datos generales</h2>
     <div class="help">Estos datos se replican automáticamente en todo el documento (Portada → MRA Full Assessment).</div>
-    <div class="grid2">
+    <div class="grid4">
       <div class="field"><label>Cliente</label><input type="text" id="hCliente" placeholder="Ej. John Deere"></div>
       <div class="field"><label>Ubicación</label><input type="text" id="hUbicacion" placeholder="Planta / área"></div>
       <div class="field"><label>Fecha</label><input type="date" id="hFecha"></div>
@@ -111,8 +121,15 @@ button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--
 
   <div class="card">
     <h2><span class="step-num">2</span> Describe los riesgos en tus palabras</h2>
-    <div class="help">Cuéntame, como si no supiera nada del proyecto: qué tarea o condición de uso implica el riesgo, qué puede pasar (peligro/modo de falla), a quién le toca (mantenimiento, contratistas, otros), qué tan grave sería, qué tan seguido pasa, qué tan probable es, cuántas personas están expuestas, y qué medidas de control existen o se van a poner. Puedes describir varios riesgos en el mismo texto.</div>
-    <textarea id="freeText" style="height:160px;" placeholder="Ej: En la línea 402, al hacer mantenimiento al robot 3 con la puerta abierta, existe riesgo de golpe por arranque inesperado si alguien reinicia el sistema..."></textarea>
+    <div class="help">Cuéntame como si no supiera nada del proyecto. Con esto es suficiente por riesgo:</div>
+    <ul class="guide-points">
+      <li><strong>Tarea:</strong> qué se está haciendo cuando puede pasar (ej. mantenimiento, operación normal, LOTO...)</li>
+      <li><strong>Peligro:</strong> qué puede fallar o lastimar (ej. arranque inesperado, atrapamiento, golpe...)</li>
+      <li><strong>Quién está expuesto:</strong> operador, mantenimiento, contratistas, otros</li>
+      <li><strong>Qué tan grave / seguido / probable</strong> es, y a cuántas personas afecta</li>
+      <li><strong>Controles:</strong> qué se va a poner o ya se puso (guardas, interlocks, SOP, LOTO, EPP...)</li>
+    </ul>
+    <textarea id="freeText" style="height:130px;" placeholder="Ej: En la línea 402, al hacer mantenimiento al robot 3 con la puerta abierta, existe riesgo de golpe por arranque inesperado si alguien reinicia el sistema. Se va a poner un interlock en la puerta y un procedimiento de LOTO..."></textarea>
     <div class="ia-row">
       <button id="btnIA" onclick="procesarConIA()">Procesar con IA</button>
       <button class="ghost" onclick="toggleApiKeyPanel()">Editar API key</button>
@@ -128,7 +145,7 @@ button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--
 
   <div class="card">
     <h2><span class="step-num">3</span> Valida y completa cada riesgo</h2>
-    <div class="help">Revisa lo que propuso la IA, corrige lo que haga falta, y sube las 2 fotos de cada riesgo (la del peligro y la de la medida de mitigación).</div>
+    <div class="help">Revisa lo que propuso la IA y corrige lo que haga falta. Puedes pegar fotos con <strong>Ctrl+V</strong> (van al siguiente slot vacío) o hacer clic en el recuadro.</div>
     <div id="riskList"></div>
     <div class="add-btn-row"><button class="add-circle" onclick="addRiskCard()" title="Agregar riesgo en blanco">+</button></div>
   </div>
@@ -142,6 +159,7 @@ button.small{padding:6px 10px;font-size:12px;border-radius:6px;background:var(--
 
 </div>
 
+<script>/* ===== JSZip v3.10.1 (embebido para no depender de internet) ===== */</script>
 <script>/*!
 
 JSZip v3.10.1 - A JavaScript class for generating and reading zip files
@@ -159,7 +177,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 
 <script>
-/* ===== Escalas HRN reales de la plantilla (textos EXACTOS de los dropdowns) ===== */
+/* ===== Listas reales de la plantilla (textos EXACTOS de los dropdowns / VLOOKUP) ===== */
 const DPH = [
   {t:'Negligible: No first aid (scratch / bruise) ', v:0.1},
   {t:'Very Minor: Basic first aid (small cut, swelling) (adhesive bandage, ice pack, non-rigid supports)', v:0.5},
@@ -198,7 +216,25 @@ const NP = [
   {t:'16 to 50 persons', v:8},
   {t:'More than 50 persons', v:12},
 ];
-const CATEGORIAS = ['Mantenimiento','Contratistas','Otros'];
+
+const TAREA_OPTS = ['Operación normal','Manejo de materiales','Recuperación ante fallas','Mantenimiento correctivo/Solución de problemas','Mantenimiento preventivo','Modo de bloqueo/Recuperación','Modo manual/marcha lenta','Inicio/Apagado','Lockout/Tryout (LOTO)','Ajustes mecánicos','Configuración/Cambio','Limpiado y saneamiento'];
+
+const PELIGRO_OPTS = ['Mecánica: transmisión; pinchazo/aplastamiento/enredamiento.','Mecánica: conjunto de rueda estrellada; pinchazo/aplastar/enredar','Mecánica: transportador/rodillo; punto de pellizco/apriete','Mecánico: ciclo automático/arranque repentino','Mecánica - Máquinas y piezas averiadas','Control Sys - Categoría de control de seguridad','Sistema de control: fallo al detenerse.','Sistema de control: dispositivos de protección desactivados/saltados','Sistema de control: ciclo automático/arranque inesperado','Sistema de control - Jogging / Velocidad ilimitada','Control Sys - Descarga eléctrica','Controles: no funcionales.','Elec - Conexión a tierra incorrecta','Elec - partes activas','Elec - Flash','Neumático - Categoría de control de seguridad','Neumático - Sobrepresión','Hidráulico - Categoría de control de seguridad','Hidráulico - Sobrepresión','Resbalón / Tropezón / Caída','Temperatura / Quemadura','Químicos / Humos','Ergonomía','Incendio / Explosión','Nivel de ruido'];
+
+// Columna U y AC: controles de ingeniería/hardware (mismo universo de opciones)
+const CONTROL_ENG_OPTS = ['Ninguno','Controles administrativos / EPP','Protector fijo: Reemplazar/reparar los elementos de fijación existentes y/o los sujetadores.','Guarda fija: añadir nuevos elementos y/o fijaciones.','Guardia fija: Guardia de alto nivel/plataforma y puerta.','Guarda fija, policarbonato: Reemplazar el existente.','Guarda fija, policarbonato: Añadir nuevo','Protección/puerta móvil: sustituir/reparar los elementos existentes y/o los elementos de fijación.','Protección/puerta móvil: Añadir nueva, con Interlocked','Protección inferior de Conveyor: Añadir nueva','Protección inferior de Conveyor: añadir nueva, con Interlock','Control de zonas: definir/crear zonas de seguridad/ guardas.','Control de zona: Reubicar los controles existentes fuera del área de acceso controlado.','E-Stops: Sustituir por E-Stop PB / Legend y Reinicio de Seguridad conforme a la normativa','Paradas de E: Instalar/Reemplazar con control de circuitos fiables y restablecer la seguridad','Parada de emergencia: añadir cordón de tracción','Actualizar los controles de seguridad con componentes clasificados para seguridad y reinicio de seguridad','Control de acceso: Añadir un interruptor de puerta no bloqueable','Control de acceso: Añadir interruptor de bloqueo de puerta','Control de acceso: Añadir interruptor de clave atrapada','Control de acceso: Añadir interruptor activador','Control de acceso: controles a dos manos','remote','Detección de presencia: Añadir cortina de luz','Detección de presencia: Añadir una alfombra de seguridad','Detección de presencia: Detector de borde añadido','Detección de presencia: Añadir escáner láser','Control/monitorización de presión: Añadir interruptor de presión al circuito de seguridad','Control/monitorización de temperatura: Añadir interruptor de temperatura al circuito de seguridad','Seguro/Velocidad cero: Añadir relés/controles de detección de velocidad para acceso seguro','Seguro/Velocidad cero: Añadir circuitos fiables de control para un acceso seguro','Aislamiento neumático: solo contactor/relé de seguridad','Aislamiento neumático: par contactor/relé de seguridad','Aislamiento neumático: válvula de seguridad; Bloquear/sangrado','Aislamiento hidráulico: solo contactor/relé de seguridad','Aislamiento hidráulico: par contactor de seguridad/relé','Aislamiento hidráulico: válvula de seguridad; Bloquear/sangrado','Aislamiento hidráulico: Añadir protección contra roturas de manguera','Mecánica: Añadir tope mecánico para evitar el movimiento de la máquina','Información para usar: en la máquina - señales de advertencia, slignal, en manual - información para usuarios'];
+
+// Columna Y: controles administrativos/procedimiento
+const CONTROL_PROC_OPTS = ['Ninguno','Procedimiento / Implementación de SOP','Mantenimiento: Procedimiento/SOP/LOTO','Mantenimiento Guardas, sujetadores, limpieza','Compra / Mantenimiento: cambio de cerrrojo','Compra / Procedimiento:','Ingeniería: Sujetador de robot, Accesos HMI','Modificación/actualización del proveedor: controles/software/dispositivos de seguridad','Evaluación EHS (ergo, ruido, químico, radiación)','Reducción de riesgos mediante medidas de diseño inherentemente seguras','Información para usar: en la máquina - señales de advertencia, slignal, en manual - información para usuarios'];
+
+// ISO 13849-1:2023 — 5 factores que determinan el PLr requerido (columna N, uno por cada fila del bloque)
+const ISO_SKILL = ['Unskilled person','Skilled person'];
+const ISO_SPEED = ['High speed event e.g. > 1000 mm/s, time to hazard <1s, and/or no or too little time to escape','Mid speed event e.g. 250 mm/s to 1000mm/s, time to hazard ≥1s and <3s, and/or limited time to escape','Low or very low speed event e.g. <250 mm/s, time to hazard ≥3s, and/or enough time to escape'];
+const ISO_AVOID = ['Not possible','Occasionally/rarely possible (possible in <50% of the cases)','Easily possible (possible in ≥ 50% of the cases)'];
+const ISO_RECOG = ['Not possible (instrumentation necessary, human senses cannot perceive the hazard)','Occasionally/rare recognition of the hazard (possible in <50% of the cases)','Easy recognition of the hazard (possible in ≥ 50% of the cases)'];
+const ISO_COMPLEX = ['Medium to high complexity (e.g. troubleshooting, hold-to-run setup)','Low complexity / no interaction (e.g. adjust clamps, load a workpiece)'];
+
+const PERSONAS_COLS = [ {key:'operador', col:'G', label:'Operador'}, {key:'mantenimiento', col:'H', label:'Mantenimiento'}, {key:'contratistas', col:'I', label:'Contratistas'}, {key:'otros', col:'J', label:'Otros'} ];
 
 function hrnScore(dphT,feT,loT,npT){
   const d=DPH.find(x=>x.t===dphT), f=FE.find(x=>x.t===feT), l=LO.find(x=>x.t===loT), n=NP.find(x=>x.t===npT);
@@ -207,26 +243,27 @@ function hrnScore(dphT,feT,loT,npT){
 }
 function hrnLevel(score){
   if(score==null) return {label:'—',cls:''};
-  if(score>500) return {label:'Unacceptable risk ('+score.toFixed(3)+')', cls:'score-crit'};
-  if(score>50) return {label:'High risk ('+score.toFixed(3)+')', cls:'score-high'};
-  if(score>25) return {label:'Medium risk ('+score.toFixed(3)+')', cls:'score-med'};
-  if(score>5) return {label:'Low risk ('+score.toFixed(3)+')', cls:'score-low'};
-  return {label:'Acceptable risk ('+score.toFixed(3)+')', cls:'score-ok'};
+  if(score>500) return {label:'Unacceptable ('+score.toFixed(3)+')', cls:'score-crit'};
+  if(score>50) return {label:'High ('+score.toFixed(3)+')', cls:'score-high'};
+  if(score>25) return {label:'Medium ('+score.toFixed(3)+')', cls:'score-med'};
+  if(score>5) return {label:'Low ('+score.toFixed(3)+')', cls:'score-low'};
+  return {label:'Acceptable ('+score.toFixed(3)+')', cls:'score-ok'};
 }
 
 /* ===== Estado ===== */
-let risks = []; // array de objetos riesgo
+let risks = [];
 let riskSeq = 0;
 
 function blankStage(){ return {dph:'', fe:'', lo:'', np:''}; }
 function newRisk(prefill){
   const r = Object.assign({
     id: 'r'+(++riskSeq),
-    tarea:'', peligro:'', categoria:'Mantenimiento',
-    control1:'', control2:'',
+    tarea:'', peligro:'',
+    personas: {operador:false, mantenimiento:false, contratistas:false, otros:false},
+    iso: {skill:'', speed:'', avoid:'', recog:'', complex:''},
+    controlProc:'', controlEng:'', // Y y AC (AC=controlEng; U se copia de AC al generar)
     stage1: blankStage(), stage4: blankStage(),
     fotoRiesgo:null, fotoMitigacion:null,
-    expanded:true,
   }, prefill||{});
   return r;
 }
@@ -234,11 +271,9 @@ function newRisk(prefill){
 function addRiskCard(prefill){ risks.push(newRisk(prefill)); renderRisks(); }
 function removeRisk(id){ risks = risks.filter(r=>r.id!==id); renderRisks(); }
 
-function selectOptions(list, current){
-  return '<option value="">-- selecciona --</option>' + list.map(o=>'<option value="'+escAttr(o.t)+'"'+(o.t===current?' selected':'')+'>'+escHtml(o.t)+'</option>').join('');
-}
 function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+function opts(list, current){ return '<option value="">--</option>' + list.map(t=>'<option value="'+escAttr(t)+'"'+(t===current?' selected':'')+'>'+escHtml(t.length>90?t.slice(0,88)+'…':t)+'</option>').join(''); }
 
 function renderRisks(){
   const box = document.getElementById('riskList');
@@ -250,54 +285,71 @@ function renderRisks(){
     return '<div class="risk-card" data-id="'+r.id+'">'
       + '<div class="risk-head"><span class="badge">Riesgo #'+(idx+1)+'</span>'
       + '<button class="small" onclick="removeRisk(\''+r.id+'\')">Eliminar</button></div>'
-      + '<div class="field"><label>Condición de uso / Tarea</label><textarea rows="2" oninput="updateField(\''+r.id+'\',\'tarea\',this.value)">'+escHtml(r.tarea)+'</textarea></div>'
-      + '<div class="field"><label>Peligro(s) / Modo de falla</label><textarea rows="2" oninput="updateField(\''+r.id+'\',\'peligro\',this.value)">'+escHtml(r.peligro)+'</textarea></div>'
-      + '<div class="field"><label>Categoría</label><select onchange="updateField(\''+r.id+'\',\'categoria\',this.value)">'
-        + CATEGORIAS.map(c=>'<option value="'+c+'"'+(c===r.categoria?' selected':'')+'>'+c+'</option>').join('') + '</select></div>'
+      + '<div class="rc-grid">'
 
-      + '<div class="stage-box"><div class="stage-title">Evaluación inicial — sin salvaguardas / sin protección</div>'
-      + '<div class="grid2">'
-        + selField(r.id,'stage1','dph','Gravedad (DPH)',DPH,r.stage1.dph)
-        + selField(r.id,'stage1','fe','Frecuencia (FE)',FE,r.stage1.fe)
-        + selField(r.id,'stage1','lo','Verosimilitud (LO)',LO,r.stage1.lo)
-        + selField(r.id,'stage1','np','Número de personas (NP)',NP,r.stage1.np)
-      + '</div><div class="score-pill '+lv1.cls+'">HRN inicial: '+lv1.label+'</div></div>'
+        + '<div class="rc-col">'
+          + '<div class="field"><label>Condición de uso / Tarea</label><select onchange="updateField(\''+r.id+'\',\'tarea\',this.value)">'+opts(TAREA_OPTS,r.tarea)+'</select></div>'
+          + '<div class="field" style="margin-top:6px;"><label>Peligro(s) / Modo de falla</label><select onchange="updateField(\''+r.id+'\',\'peligro\',this.value)">'+opts(PELIGRO_OPTS,r.peligro)+'</select></div>'
+          + '<div class="field" style="margin-top:6px;"><label>Personas en riesgo</label><div class="chips">'
+            + PERSONAS_COLS.map(p=>'<span class="chip'+(r.personas[p.key]?' on':'')+'" onclick="togglePersona(\''+r.id+'\',\''+p.key+'\')">'+p.label+'</span>').join('')
+          + '</div></div>'
+        + '</div>'
 
-      + '<div class="field" style="margin-top:10px;"><label>Medida de control propuesta / implementada (1)</label><textarea rows="2" oninput="updateField(\''+r.id+'\',\'control1\',this.value)">'+escHtml(r.control1)+'</textarea></div>'
-      + '<div class="field"><label>Medida de control adicional (2, opcional)</label><textarea rows="2" oninput="updateField(\''+r.id+'\',\'control2\',this.value)">'+escHtml(r.control2)+'</textarea></div>'
+        + '<div class="rc-col">'
+          + '<div class="stage-title">Sin salvaguardas</div>'
+          + '<div class="stage-strip">'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage1\',\'dph\',this.value)" title="Gravedad">'+opts(DPH.map(o=>o.t),r.stage1.dph)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage1\',\'fe\',this.value)" title="Frecuencia">'+opts(FE.map(o=>o.t),r.stage1.fe)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage1\',\'lo\',this.value)" title="Verosimilitud">'+opts(LO.map(o=>o.t),r.stage1.lo)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage1\',\'np\',this.value)" title="Personas">'+opts(NP.map(o=>o.t),r.stage1.np)+'</select>'
+          + '</div><div class="score-pill '+lv1.cls+'">HRN inicial: '+lv1.label+'</div>'
+          + '<div class="stage-title">ISO 13849-1:2023 (PLr requerido)</div>'
+          + '<div class="iso-strip">'
+            + '<select onchange="updateIso(\''+r.id+'\',\'skill\',this.value)" title="Habilidad">'+opts(ISO_SKILL,r.iso.skill)+'</select>'
+            + '<select onchange="updateIso(\''+r.id+'\',\'speed\',this.value)" title="Velocidad">'+opts(ISO_SPEED,r.iso.speed)+'</select>'
+            + '<select onchange="updateIso(\''+r.id+'\',\'avoid\',this.value)" title="Evitabilidad">'+opts(ISO_AVOID,r.iso.avoid)+'</select>'
+            + '<select onchange="updateIso(\''+r.id+'\',\'recog\',this.value)" title="Reconocimiento">'+opts(ISO_RECOG,r.iso.recog)+'</select>'
+            + '<select onchange="updateIso(\''+r.id+'\',\'complex\',this.value)" title="Complejidad">'+opts(ISO_COMPLEX,r.iso.complex)+'</select>'
+          + '</div>'
+        + '</div>'
 
-      + '<div class="stage-box"><div class="stage-title">Evaluación final — riesgo residual con controles aplicados</div>'
-      + '<div class="grid2">'
-        + selField(r.id,'stage4','dph','Gravedad (DPH)',DPH,r.stage4.dph)
-        + selField(r.id,'stage4','fe','Frecuencia (FE)',FE,r.stage4.fe)
-        + selField(r.id,'stage4','lo','Verosimilitud (LO)',LO,r.stage4.lo)
-        + selField(r.id,'stage4','np','Número de personas (NP)',NP,r.stage4.np)
-      + '</div><div class="score-pill '+lv4.cls+'">HRN final: '+lv4.label+'</div>'
-      + '<div class="help" style="margin-top:6px;">Nota: el Excel real también contempla 2 etapas intermedias (con salvaguarda parcial). Al generar, se copian automáticamente iguales a esta evaluación final; si necesitas afinarlas edítalas directo en Excel después.</div></div>'
+        + '<div class="rc-col">'
+          + '<div class="field"><label>Control propuesto (procedimiento / administrativo)</label><select onchange="updateField(\''+r.id+'\',\'controlProc\',this.value)">'+opts(CONTROL_PROC_OPTS,r.controlProc)+'</select></div>'
+          + '<div class="field" style="margin-top:6px;"><label>Control real implementado (ingeniería / hardware)</label><select onchange="updateField(\''+r.id+'\',\'controlEng\',this.value)">'+opts(CONTROL_ENG_OPTS,r.controlEng)+'</select></div>'
+          + '<div class="note-mini">El control "propuesto" (columna U) se llena igual al control real implementado al generar el archivo.</div>'
+          + '<div class="stage-title">Riesgo residual (con controles aplicados)</div>'
+          + '<div class="stage-strip">'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage4\',\'dph\',this.value)" title="Gravedad">'+opts(DPH.map(o=>o.t),r.stage4.dph)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage4\',\'fe\',this.value)" title="Frecuencia">'+opts(FE.map(o=>o.t),r.stage4.fe)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage4\',\'lo\',this.value)" title="Verosimilitud">'+opts(LO.map(o=>o.t),r.stage4.lo)+'</select>'
+            + '<select onchange="updateStage(\''+r.id+'\',\'stage4\',\'np\',this.value)" title="Personas">'+opts(NP.map(o=>o.t),r.stage4.np)+'</select>'
+          + '</div><div class="score-pill '+lv4.cls+'">HRN final: '+lv4.label+'</div>'
+        + '</div>'
 
-      + '<div class="photo-grid">'
-        + photoSlot(r.id,'fotoRiesgo','Foto del riesgo',r.fotoRiesgo)
-        + photoSlot(r.id,'fotoMitigacion','Foto de la mitigación',r.fotoMitigacion)
+        + '<div class="rc-col rc-photos">'
+          + photoSlot(r.id,'fotoRiesgo','Foto del riesgo',r.fotoRiesgo)
+          + photoSlot(r.id,'fotoMitigacion','Foto de la mitigación',r.fotoMitigacion)
+        + '</div>'
+
       + '</div>'
       + '</div>';
   }).join('');
 }
 
-function selField(id,stage,key,label,list,current){
-  return '<div class="field"><label>'+label+'</label><select onchange="updateStage(\''+id+'\',\''+stage+'\',\''+key+'\',this.value)">'+selectOptions(list,current)+'</select></div>';
-}
 function photoSlot(id,key,label,img){
   const has = img && img.dataUrl;
-  return '<div class="photo-slot'+(has?' has-img':'')+'" onclick="event.target.tagName!==\'INPUT\'&&document.getElementById(\'file_'+id+'_'+key+'\').click()">'
-    + (has ? '<img class="preview" src="'+img.dataUrl+'"><button class="remove-btn" onclick="event.stopPropagation();removePhoto(\''+id+'\',\''+key+'\')">✕</button>' : '<div class="slot-icon">📷</div><div class="slot-label">'+label+'<br>clic para subir</div>')
+  return '<div class="photo-slot'+(has?' has-img':'')+'" data-slot="'+id+'_'+key+'" onclick="event.target.tagName!==\'INPUT\'&&document.getElementById(\'file_'+id+'_'+key+'\').click()">'
+    + (has ? '<img class="preview" src="'+img.dataUrl+'"><button class="remove-btn" onclick="event.stopPropagation();removePhoto(\''+id+'\',\''+key+'\')">✕</button>' : '<div class="slot-icon">📷</div><div class="slot-label">'+label+'<br>clic o Ctrl+V</div>')
     + '<input type="file" id="file_'+id+'_'+key+'" accept="image/*" onchange="onPhotoSelected(\''+id+'\',\''+key+'\',this)">'
     + '</div>';
 }
 
 function updateField(id,field,val){ const r=risks.find(x=>x.id===id); if(r){ r[field]=val; } }
 function updateStage(id,stage,key,val){ const r=risks.find(x=>x.id===id); if(r){ r[stage][key]=val; renderRisks(); } }
-function onPhotoSelected(id,key,input){
-  const file = input.files && input.files[0]; if(!file) return;
+function updateIso(id,key,val){ const r=risks.find(x=>x.id===id); if(r){ r.iso[key]=val; } }
+function togglePersona(id,key){ const r=risks.find(x=>x.id===id); if(r){ r.personas[key]=!r.personas[key]; renderRisks(); } }
+
+function setPhotoFromFile(id,key,file){
   const reader = new FileReader();
   reader.onload = function(e){
     const r = risks.find(x=>x.id===id); if(!r) return;
@@ -307,7 +359,23 @@ function onPhotoSelected(id,key,input){
   };
   reader.readAsDataURL(file);
 }
+function onPhotoSelected(id,key,input){ const file = input.files && input.files[0]; if(file) setPhotoFromFile(id,key,file); }
 function removePhoto(id,key){ const r=risks.find(x=>x.id===id); if(r){ r[key]=null; renderRisks(); } }
+
+// Ctrl+V global → va al siguiente slot vacío (foto de riesgo primero, luego mitigación) del primer riesgo con espacio libre
+document.addEventListener('paste', e=>{
+  const items = e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  for(const item of items){
+    if(item.type && item.type.startsWith('image/')){
+      const file = item.getAsFile();
+      for(const r of risks){
+        if(!r.fotoRiesgo){ setPhotoFromFile(r.id,'fotoRiesgo',file); return; }
+        if(!r.fotoMitigacion){ setPhotoFromFile(r.id,'fotoMitigacion',file); return; }
+      }
+    }
+  }
+});
 
 /* ===== IA (Google Gemini) ===== */
 const GEMINI_MODELS = ['gemini-3.5-flash','gemini-3.1-flash-lite','gemini-flash-latest','gemini-3.1-pro-preview'];
@@ -335,22 +403,27 @@ function toggleApiKeyPanel(){ const p=document.getElementById('apiKeyPanel'); p.
 function onApiKeyInput(){ saveApiKey(document.getElementById('apiKey').value.trim()); }
 
 function buildPrompt(freeText){
-  const listTxt = (arr)=>arr.map(o=>'"'+o.t+'"').join(' | ');
-  return 'Eres un asistente que ayuda a estructurar evaluaciones de riesgo de máquina (MRA, método Hazard Risk Number - HRN) a partir de una descripción libre en español.\n'
-  + 'Te voy a dar una descripción de uno o varios riesgos de una máquina o línea. Identifica CADA riesgo distinto que se describe y regresa SOLO un JSON (sin texto antes ni después, sin markdown) con este formato exacto:\n'
-  + '{"riesgos":[{"tarea":"...", "peligro":"...", "categoria":"Mantenimiento|Contratistas|Otros", "control1":"...", "control2":"", "stage1":{"dph":"...","fe":"...","lo":"...","np":"..."}, "stage4":{"dph":"...","fe":"...","lo":"...","np":"..."}}]}\n\n'
-  + 'REGLAS:\n'
-  + '- "tarea" = condición de uso / qué se está haciendo cuando puede ocurrir el riesgo (breve, 1-2 frases).\n'
-  + '- "peligro" = qué puede pasar / modo de falla (breve, 1-2 frases).\n'
-  + '- "categoria" = a quién le aplica la tarea, EXACTAMENTE una de: Mantenimiento, Contratistas, Otros.\n'
-  + '- "control1" = medida de control principal propuesta o existente. "control2" = medida adicional si aplica, si no déjalo vacío "".\n'
-  + '- "stage1" = evaluación SIN ninguna protección/salvaguarda (el peor caso creíble, antes de cualquier control).\n'
-  + '- "stage4" = evaluación DESPUÉS de aplicar las medidas de control descritas (riesgo residual).\n'
-  + '- Cada uno de dph/fe/lo/np debe ser EXACTAMENTE uno de estos textos literales (cópialos tal cual, no los traduzcas ni los cambies):\n'
-  + '  dph (gravedad) puede ser: ' + listTxt(DPH) + '\n'
-  + '  fe (frecuencia) puede ser: ' + listTxt(FE) + '\n'
-  + '  lo (verosimilitud) puede ser: ' + listTxt(LO) + '\n'
-  + '  np (número de personas) puede ser: ' + listTxt(NP) + '\n'
+  const listTxt = (arr)=>arr.map(t=>'"'+t+'"').join(' | ');
+  return 'Eres un asistente que ayuda a estructurar evaluaciones de riesgo de máquina (MRA, método Hazard Risk Number - HRN + ISO 13849-1:2023) a partir de una descripción libre en español.\n'
+  + 'Identifica CADA riesgo distinto que se describe y regresa SOLO un JSON (sin texto antes ni después, sin markdown) con este formato exacto:\n'
+  + '{"riesgos":[{"tarea":"...","peligro":"...","personas":{"operador":true,"mantenimiento":false,"contratistas":false,"otros":false},"controlProc":"...","controlEng":"...","stage1":{"dph":"...","fe":"...","lo":"...","np":"..."},"stage4":{"dph":"...","fe":"...","lo":"...","np":"..."},"iso":{"skill":"...","speed":"...","avoid":"...","recog":"...","complex":"..."}}]}\n\n'
+  + 'REGLAS — cada campo de texto debe ser EXACTAMENTE uno de estos valores literales (cópialos tal cual, sin traducir ni modificar):\n'
+  + 'tarea: ' + listTxt(TAREA_OPTS) + '\n'
+  + 'peligro: ' + listTxt(PELIGRO_OPTS) + '\n'
+  + 'controlProc (control administrativo/procedimiento propuesto): ' + listTxt(CONTROL_PROC_OPTS) + '\n'
+  + 'controlEng (control de ingeniería/hardware REAL implementado): ' + listTxt(CONTROL_ENG_OPTS) + '\n'
+  + 'stage1.dph / stage4.dph (gravedad): ' + listTxt(DPH.map(o=>o.t)) + '\n'
+  + 'stage1.fe / stage4.fe (frecuencia): ' + listTxt(FE.map(o=>o.t)) + '\n'
+  + 'stage1.lo / stage4.lo (verosimilitud): ' + listTxt(LO.map(o=>o.t)) + '\n'
+  + 'stage1.np / stage4.np (número de personas): ' + listTxt(NP.map(o=>o.t)) + '\n'
+  + 'iso.skill (habilidad de la persona expuesta): ' + listTxt(ISO_SKILL) + '\n'
+  + 'iso.speed (velocidad del evento peligroso): ' + listTxt(ISO_SPEED) + '\n'
+  + 'iso.avoid (posibilidad de evitar el daño): ' + listTxt(ISO_AVOID) + '\n'
+  + 'iso.recog (reconocimiento del peligro): ' + listTxt(ISO_RECOG) + '\n'
+  + 'iso.complex (complejidad de la tarea): ' + listTxt(ISO_COMPLEX) + '\n\n'
+  + 'NOTAS:\n'
+  + '- "stage1" = evaluación SIN ninguna protección (peor caso creíble). "stage4" = riesgo residual DESPUÉS de aplicar los controles descritos.\n'
+  + '- "personas" puede tener varias en true si el texto lo indica (ej. afecta a mantenimiento Y a contratistas).\n'
   + '- Si el texto describe varios riesgos distintos, regresa varios objetos en "riesgos".\n'
   + '- Si falta un dato, infiere el valor más razonable según el contexto industrial (nunca lo dejes vacío).\n\n'
   + 'Descripción a analizar:\n' + freeText;
@@ -375,10 +448,11 @@ async function procesarConIA(){
     list.forEach(item=>{
       addRiskCard({
         tarea:item.tarea||'', peligro:item.peligro||'',
-        categoria: CATEGORIAS.includes(item.categoria)?item.categoria:'Mantenimiento',
-        control1:item.control1||'', control2:item.control2||'',
+        personas: Object.assign({operador:false,mantenimiento:false,contratistas:false,otros:false}, item.personas||{}),
+        controlProc:item.controlProc||'', controlEng:item.controlEng||'',
         stage1: Object.assign(blankStage(), item.stage1||{}),
         stage4: Object.assign(blankStage(), item.stage4||{}),
+        iso: Object.assign({skill:'',speed:'',avoid:'',recog:'',complex:''}, item.iso||{}),
       });
     });
     document.getElementById('freeText').value='';
@@ -395,7 +469,6 @@ const TEMPLATE_B64 = "UEsDBBQABgAIAAAAIQBP+lp8gAIAAAEUAAATAAgCW0NvbnRlbnRfVHlwZX
 function b64ToArrayBuffer(b64){ const bin=atob(b64),len=bin.length,bytes=new Uint8Array(len); for(let i=0;i<len;i++)bytes[i]=bin.charCodeAt(i); return bytes.buffer; }
 function escXml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Reemplaza el valor de una celda existente (self-closing o con contenido) por texto plano inlineStr, preservando su estilo "s".
 function setCellText(xml, ref, text){
   const safe = escXml(text||'');
   const reSelf = new RegExp('<c r="'+ref+'"([^>]*)/>');
@@ -407,13 +480,10 @@ function setCellText(xml, ref, text){
   };
   if(reSelf.test(xml)) return xml.replace(reSelf,(m,attrs)=>build(attrs));
   if(reFull.test(xml)) return xml.replace(reFull,(m,attrs)=>build(attrs));
-  return xml; // celda no encontrada: se ignora
+  return xml;
 }
 
-function colLetterToIndex(letters){
-  let n=0; for(let i=0;i<letters.length;i++) n = n*26 + (letters.charCodeAt(i)-64);
-  return n-1; // 0-based
-}
+function colLetterToIndex(letters){ let n=0; for(let i=0;i<letters.length;i++) n = n*26 + (letters.charCodeAt(i)-64); return n-1; }
 
 function buildPicXml(rId,fromCol,fromRow,toCol,toRow,idx){
   return '<xdr:twoCellAnchor editAs="oneCell">'+
@@ -459,7 +529,6 @@ async function generarMRA(){
 
     const zip=await JSZip.loadAsync(b64ToArrayBuffer(TEMPLATE_B64));
 
-    // Portada
     let sheet2=await zip.file('xl/worksheets/sheet2.xml').async('string');
     sheet2=setCellText(sheet2,'C1',document.getElementById('hCliente').value);
     sheet2=setCellText(sheet2,'I1',document.getElementById('hUbicacion').value);
@@ -471,36 +540,42 @@ async function generarMRA(){
     sheet2=setCellText(sheet2,'C2',document.getElementById('hCelula').value);
     zip.file('xl/worksheets/sheet2.xml',sheet2);
 
-    // Full Assessment
     let sheet3=await zip.file('xl/worksheets/sheet3.xml').async('string');
     const photoJobs=[];
     const colE=colLetterToIndex('E'), colF=colLetterToIndex('F');
     const colAD=colLetterToIndex('AD'), colAE=colLetterToIndex('AE');
 
     risks.forEach((r,i)=>{
-      const rowBase = 8 + i*5; // filas 8,13,18,... (bloques de 5, 200 disponibles)
+      const rowBase = 8 + i*5;
       const sc1=hrnScore(r.stage1.dph,r.stage1.fe,r.stage1.lo,r.stage1.np);
       const sc4=hrnScore(r.stage4.dph,r.stage4.fe,r.stage4.lo,r.stage4.np);
-      if(sc1==null) warnings.push('Riesgo #'+(i+1)+': falta completar la evaluación inicial (Gravedad/Frecuencia/Verosimilitud/Personas).');
-      if(sc4==null) warnings.push('Riesgo #'+(i+1)+': falta completar la evaluación final.');
+      if(sc1==null) warnings.push('Riesgo #'+(i+1)+': falta completar la evaluación "sin salvaguardas".');
+      if(sc4==null) warnings.push('Riesgo #'+(i+1)+': falta completar la evaluación de "riesgo residual".');
       if(!r.tarea) warnings.push('Riesgo #'+(i+1)+': falta la tarea/condición de uso.');
       if(!r.peligro) warnings.push('Riesgo #'+(i+1)+': falta la descripción del peligro.');
+      if(!Object.values(r.personas).some(Boolean)) warnings.push('Riesgo #'+(i+1)+': no se marcó ninguna persona en riesgo.');
 
       sheet3=setCellText(sheet3,'C'+rowBase, r.tarea);
       sheet3=setCellText(sheet3,'D'+rowBase, r.peligro);
-      const catCol = r.categoria==='Mantenimiento'?'H':(r.categoria==='Contratistas'?'I':'J');
-      sheet3=setCellText(sheet3, catCol+rowBase, 'X');
+      PERSONAS_COLS.forEach(p=>{ if(r.personas[p.key]) sheet3=setCellText(sheet3, p.col+rowBase, 'X'); });
 
-      // Etapa 1 (K) - sin salvaguardas
+      // Etapa "sin salvaguardas" (K) y su reflejo en ISO 13849 (N)
       sheet3=setCellText(sheet3,'K'+(rowBase+0), r.stage1.dph);
       sheet3=setCellText(sheet3,'K'+(rowBase+1), r.stage1.fe);
       sheet3=setCellText(sheet3,'K'+(rowBase+2), r.stage1.lo);
       sheet3=setCellText(sheet3,'K'+(rowBase+3), r.stage1.np);
+      sheet3=setCellText(sheet3,'N'+(rowBase+0), r.iso.skill);
+      sheet3=setCellText(sheet3,'N'+(rowBase+1), r.iso.speed);
+      sheet3=setCellText(sheet3,'N'+(rowBase+2), r.iso.avoid);
+      sheet3=setCellText(sheet3,'N'+(rowBase+3), r.iso.recog);
+      sheet3=setCellText(sheet3,'N'+(rowBase+4), r.iso.complex);
 
-      sheet3=setCellText(sheet3,'Y'+rowBase, r.control1);
-      sheet3=setCellText(sheet3,'AC'+rowBase, r.control2);
+      // Controles: Y = propuesto/administrativo, AC = real/ingeniería, U = copia de AC (mismo universo de opciones)
+      sheet3=setCellText(sheet3,'Y'+rowBase, r.controlProc);
+      sheet3=setCellText(sheet3,'AC'+rowBase, r.controlEng);
+      sheet3=setCellText(sheet3,'U'+rowBase, r.controlEng);
 
-      // Etapas intermedias (V, Z) = igual a la etapa final por default
+      // Etapas intermedias (V, Z) = igual a la etapa final residual por default
       ['V','Z','AE'].forEach(col=>{
         sheet3=setCellText(sheet3,col+(rowBase+0), r.stage4.dph);
         sheet3=setCellText(sheet3,col+(rowBase+1), r.stage4.fe);
@@ -508,19 +583,14 @@ async function generarMRA(){
         sheet3=setCellText(sheet3,col+(rowBase+3), r.stage4.np);
       });
 
-      const fromRow0 = rowBase-1, toRow0 = rowBase+4-1; // 0-indexed, bloque de 5 filas mergeado
-      if(r.fotoRiesgo && r.fotoRiesgo.dataUrl){
-        photoJobs.push({dataUrl:r.fotoRiesgo.dataUrl, ext:r.fotoRiesgo.ext, fromCol:colE, toCol:colF, fromRow:fromRow0, toRow:toRow0});
-      }
-      if(r.fotoMitigacion && r.fotoMitigacion.dataUrl){
-        photoJobs.push({dataUrl:r.fotoMitigacion.dataUrl, ext:r.fotoMitigacion.ext, fromCol:colAD, toCol:colAE, fromRow:fromRow0, toRow:toRow0});
-      }
+      const fromRow0 = rowBase-1, toRow0 = rowBase+4-1;
+      if(r.fotoRiesgo && r.fotoRiesgo.dataUrl) photoJobs.push({dataUrl:r.fotoRiesgo.dataUrl, ext:r.fotoRiesgo.ext, fromCol:colE, toCol:colF, fromRow:fromRow0, toRow:toRow0});
+      if(r.fotoMitigacion && r.fotoMitigacion.dataUrl) photoJobs.push({dataUrl:r.fotoMitigacion.dataUrl, ext:r.fotoMitigacion.ext, fromCol:colAD, toCol:colAE, fromRow:fromRow0, toRow:toRow0});
     });
 
     zip.file('xl/worksheets/sheet3.xml',sheet3);
     await injectPhotos(zip, photoJobs);
 
-    // Forzar recálculo completo al abrir (las fórmulas VLOOKUP/HRN tenían cache vacío)
     let workbook=await zip.file('xl/workbook.xml').async('string');
     workbook=workbook.replace(/<calcPr[^/]*\/>/, '<calcPr calcId="191028" fullCalcOnLoad="1"/>');
     zip.file('xl/workbook.xml',workbook);
