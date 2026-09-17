@@ -360,13 +360,27 @@ function updateStage(id,stage,key,val){ const r=risks.find(x=>x.id===id); if(r){
 function updateIso(id,key,val){ const r=risks.find(x=>x.id===id); if(r){ r.iso[key]=val; } }
 function togglePersona(id,key){ const r=risks.find(x=>x.id===id); if(r){ r.personas[key]=!r.personas[key]; renderRisks(); } }
 
+// Normaliza cualquier foto a PNG antes de guardarla: el Excel solo tiene registrados
+// como tipo de contenido válido png/jpeg/emf, así que una extensión distinta (p.ej. el
+// .jpg que generan muchos celulares) hace que Excel marque el archivo como dañado al abrirlo.
 function setPhotoFromFile(id,key,file){
   const reader = new FileReader();
   reader.onload = function(e){
-    const r = risks.find(x=>x.id===id); if(!r) return;
-    const ext = (file.type.split('/')[1]||'png').replace('jpeg','jpg');
-    r[key] = {dataUrl: e.target.result, ext};
-    renderRisks();
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || 1; canvas.height = img.naturalHeight || 1;
+      canvas.getContext('2d').drawImage(img,0,0);
+      const r = risks.find(x=>x.id===id); if(!r) return;
+      r[key] = {dataUrl: canvas.toDataURL('image/png'), ext:'png'};
+      renderRisks();
+    };
+    img.onerror = function(){
+      const r = risks.find(x=>x.id===id); if(!r) return;
+      r[key] = {dataUrl: e.target.result, ext:'png'}; // último recurso si el navegador no pudo decodificarla
+      renderRisks();
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
