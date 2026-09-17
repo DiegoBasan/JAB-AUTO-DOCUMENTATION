@@ -99,9 +99,9 @@ button.small{padding:5px 9px;font-size:11.5px;border-radius:6px;background:var(-
       <div class="field"><label>Título / Estación</label><input type="text" id="hTitulo" placeholder="Ej. Estación 202 - Gecko"></div>
       <div class="field"><label>Subtítulo</label><input type="text" id="hSubtitulo" placeholder="Ej. Cambio de Gripper"></div>
       <div class="field"><label>Fecha</label><input type="date" id="hFecha"></div>
-      <div class="field"><label>Tipo de propuesta</label><input type="text" id="hTag" placeholder="Ej. Propuesta de Automatización" value="Propuesta de Automatización"></div>
+      <div class="field"><label>Tipo de propuesta (en inglés, va impreso en la portada)</label><input type="text" id="hTag" placeholder="Ej. Automation Proposal" value="Automation Proposal"></div>
     </div>
-    <div class="field" style="margin-top:4px;"><label>Etiqueta del encabezado (badge superior derecho)</label><input type="text" id="hHeaderTag" placeholder="Ej. APROBAR DISEÑO" value="APROBAR DISEÑO"></div>
+    <div class="field" style="margin-top:4px;"><label>Etiqueta del encabezado (en inglés, badge superior derecho)</label><input type="text" id="hHeaderTag" placeholder="Ej. APPROVE DESIGN" value="APPROVE DESIGN"></div>
   </div>
 
   <div class="card">
@@ -237,7 +237,7 @@ const SLIDE_TEMPLATES = {
     stencilNum: 6,
     label: 'Vista de diseño',
     fields: [
-      {key:'sectionTitle', label:'Título de sección', type:'text', default:'Vista de diseño'},
+      {key:'sectionTitle', label:'Título de sección (en inglés)', type:'text', default:'Design overview'},
       {key:'label1', label:'Etiqueta 1 (flecha izquierda)', type:'text'},
       {key:'label2', label:'Etiqueta 2 (flecha inferior)', type:'text'},
       {key:'label3', label:'Etiqueta 3 (flecha derecha)', type:'text'},
@@ -276,8 +276,10 @@ const HEADER_TOKEN_TAG = 'APPROVE DESIGN';
 
 // Etiquetas "de fábrica" de la plantilla (no editables) traducidas al español,
 // se aplican siempre sin importar lo que haya puesto la IA/usuario.
+// El deck siempre se entrega en inglés (aunque la descripción venga en español),
+// así que estas etiquetas de fábrica se dejan tal cual están en la plantilla original.
 const FIXED_LABELS = {
-  BEFORE_AFTER: { 'BEFORE / CURRENT STATE':'ANTES / SITUACIÓN ACTUAL', 'AFTER / PROPOSED DESIGN':'DESPUÉS / PROPUESTA', 'Next Step':'Siguiente paso', 'Why this is the correct design':'Por qué es el diseño correcto', 'corrective':'cambio', 'design':'propuesto' },
+  BEFORE_AFTER: {},
   DESIGN_VIEW: {},
   RESULTS: {},
 };
@@ -323,7 +325,7 @@ function renderSlides(){
     }).join('');
     const photosHtml = tpl.photos.length ? (
       '<div class="sc-section-title">Fotos</div><div class="photo-grid">'
-      + tpl.photos.map(p=>photoSlot(s.id,p.key,p.label,s.data[p.key],s.data['sugerencia_'+p.key])).join('')
+      + tpl.photos.map(p=>photoSlot(s.id,p.key,p.label,s.data[p.key],s.data['sugerencia_'+p.key],s.data['flow_'+p.key])).join('')
       + '</div>'
     ) : '';
     return '<div class="slide-card" data-id="'+s.id+'">'
@@ -336,13 +338,36 @@ function renderSlides(){
   }).join('');
 }
 
-function photoSlot(sid,key,label,img,suggestion){
+function photoSlot(sid,key,label,img,suggestion,flowSteps){
+  const isFlow = Array.isArray(flowSteps);
+  if(isFlow){
+    const stepsText = flowSteps.join('\n');
+    return '<div class="photo-slot flow-slot">'
+      + '<div class="slot-label" style="margin-bottom:4px;"><strong>'+escHtml(label)+'</strong> — diagrama de flujo</div>'
+      + '<textarea rows="3" style="font-size:11px;" placeholder="Un paso por línea" oninput="updateFlowSteps(\''+sid+'\',\''+key+'\',this.value)">'+escHtml(stepsText)+'</textarea>'
+      + '<button class="small" style="margin-top:4px;" onclick="toggleFlowMode(\''+sid+'\',\''+key+'\',false)">Usar foto en su lugar</button>'
+      + '</div>';
+  }
   const has = img && img.dataUrl;
-  return '<div class="photo-slot'+(has?' has-img':'')+'" onclick="event.target.tagName!==\'INPUT\'&&document.getElementById(\'file_'+sid+'_'+key+'\').click()">'
-    + (has ? '<img class="preview" src="'+img.dataUrl+'"><button class="remove-btn" onclick="event.stopPropagation();removeSlidePhoto(\''+sid+'\',\''+key+'\')">✕</button>'
+  return '<div class="photo-slot'+(has?' has-img':'')+'">'
+    + '<div onclick="document.getElementById(\'file_'+sid+'_'+key+'\').click()" style="position:absolute;inset:0;">'
+    + (has ? '<img class="preview" src="'+img.dataUrl+'">'
            : '<div class="slot-label"><strong>'+escHtml(label)+'</strong><br>clic o Ctrl+V'+(suggestion?'<div class="slot-suggestion">'+escHtml(suggestion)+'</div>':'')+'</div>')
+    + '</div>'
+    + (has ? '<button class="remove-btn" onclick="event.stopPropagation();removeSlidePhoto(\''+sid+'\',\''+key+'\')">✕</button>' : '')
+    + '<button class="small" style="position:absolute;bottom:3px;right:3px;font-size:9.5px;padding:2px 5px;z-index:3;" onclick="event.stopPropagation();toggleFlowMode(\''+sid+'\',\''+key+'\',true)">↔ diagrama</button>'
     + '<input type="file" id="file_'+sid+'_'+key+'" accept="image/*" onchange="onSlidePhotoSelected(\''+sid+'\',\''+key+'\',this)">'
     + '</div>';
+}
+function toggleFlowMode(sid,key,toFlow){
+  const s = slides.find(x=>x.id===sid); if(!s) return;
+  if(toFlow){ s.data['flow_'+key] = ['Step 1','Step 2','Step 3']; }
+  else { delete s.data['flow_'+key]; }
+  renderSlides();
+}
+function updateFlowSteps(sid,key,text){
+  const s = slides.find(x=>x.id===sid); if(!s) return;
+  s.data['flow_'+key] = text.split('\n').map(t=>t.trim()).filter(Boolean);
 }
 
 function updateSlideField(sid,key,val){ const s=slides.find(x=>x.id===sid); if(s) s.data[key]=val; }
@@ -432,7 +457,7 @@ function onApiKeyInput(){ saveApiKey(document.getElementById('apiKey').value.tri
 function buildPrompt(freeText){
   return 'Eres un asistente que ayuda a armar presentaciones técnicas de Jabil (cambios de gripper/fixtura/charola/pallet, mejoras de diseño, nuevas implementaciones, correcciones a proveedor, planeación de máquina) a partir de una descripción libre en español.\n'
   + 'Decide qué slides usar (puedes repetir tipos y en el orden que tenga más sentido para contar la historia) de estos 4 tipos disponibles, y regresa SOLO un JSON (sin texto antes ni después, sin markdown):\n\n'
-  + '{"slides":[ {"type":"BEFORE_AFTER"|"DESIGN_VIEW"|"RESULTS", "data":{...campos...}, "fotos":{"<clavefoto>":"<sugerencia descriptiva de qué foto poner, en español, específica: vista, zoom, ángulo>"}} ]}\n\n'
+  + '{"slides":[ {"type":"BEFORE_AFTER"|"DESIGN_VIEW"|"RESULTS", "data":{...campos...}, "fotos":{"<clavefoto>":"<sugerencia descriptiva de qué foto poner, en español, específica: vista, zoom, ángulo>"}, "flows":{"<clavefoto>":["Paso 1","Paso 2","..."]}} ]}\n\n'
   + 'No incluyas slide de tipo TITLE (la portada ya se genera aparte con los datos generales).\n\n'
   + 'CAMPOS por tipo (usa EXACTAMENTE estas claves):\n\n'
   + 'BEFORE_AFTER — para mostrar la situación actual vs la propuesta/cambio ya hecho:\n'
@@ -446,7 +471,8 @@ function buildPrompt(freeText){
   + '  fotos posibles: img1, img2, img3\n\n'
   + 'REGLAS:\n'
   + '- Para cada foto que tenga sentido en ese slide, describe en "fotos" qué imagen debería ir ahí, de forma MUY específica y útil para quien va a tomar la foto o buscarla en el modelo 3D: tipo de vista (superior/frontal/isométrica/explotado), zoom, y qué componente debe verse. Ejemplos: "Vista superior con zoom al gripper cerrado sobre la pieza", "Explotado del ensamble mostrando el sensor de presencia", "Vista frontal del gripper abierto antes de cerrar". Esta sugerencia sí va en español (es solo una guía para quien está armando la presentación, no se imprime en la diapositiva).\n'
-  + '- No es obligatorio usar las 4 fotos de un slide si no aplican; solo incluye las que tengan sentido.\n'
+  + '- ALTERNATIVA a foto — diagrama de flujo con figuras: si uno de esos espacios de imagen encaja mejor como una secuencia de pasos (ej. "insertar pieza -> rotar 90° -> verificar con sensor -> liberar") en vez de una foto, puedes pedirlo en "flows" así: "flows":{"<clavefoto>":["Paso 1 en inglés","Paso 2 en inglés","Paso 3 en inglés"]} (3 a 5 pasos, cortos, EN INGLÉS igual que el resto de "data" — se dibuja como cajas y flechas, no necesitas conseguir esa foto). Úsalo solo cuando de verdad ayude a explicar un proceso/secuencia, no lo fuerces.\n'
+  + '- No es obligatorio usar las 4 fotos de un slide si no aplican; solo incluye las que tengan sentido (foto o flow, no ambos para la misma clave).\n'
   + '- Usa entre 3 y 5 slides de contenido (BEFORE_AFTER/DESIGN_VIEW/RESULTS, pueden repetirse tipos) salvo que el texto realmente sustente menos; no inventes datos que no se mencionaron (usa una descripción cualitativa si no hay números).\n'
   + '- IMPORTANTE: todo el contenido que va DENTRO de "data" (lo que se imprime en la diapositiva) debe estar en INGLÉS, con tono profesional/técnico, breve en los campos cortos — la presentación final siempre se entrega en inglés aunque la descripción que te dan esté en español. Tradúcelo tú.\n\n'
   + 'Descripción a analizar (en español):\n' + freeText;
@@ -477,6 +503,7 @@ async function procesarConIA(){
       if(!SLIDE_TEMPLATES[item.type]) return;
       const data = Object.assign(blankData(item.type), item.data||{});
       Object.entries(item.fotos||{}).forEach(([k,v])=>{ data['sugerencia_'+k]=v; });
+      Object.entries(item.flows||{}).forEach(([k,v])=>{ if(Array.isArray(v)&&v.length) data['flow_'+k]=v; });
       addSlideCard(item.type, data);
     });
     document.getElementById('freeText').value='';
@@ -554,6 +581,81 @@ function setRelTarget(relsXml, rid, newTarget){
   return re.test(relsXml) ? relsXml.replace(re, '$1'+newTarget+'$2') : relsXml;
 }
 
+// Todas las fotos deben quedar recortadas en rectángulo de bordes redondeados
+// (el "Crop to Shape" que el usuario aplica siempre a mano). Algunas fotos del
+// ejemplo original ya usaban esa forma, otras eran "rect" simple (enmarcadas
+// solo por una tarjeta de fondo) — se fuerzan todas a roundRect al generar.
+// Pequeña variación de diseño en la portada (para que no salga idéntica siempre):
+// una barra de acento y una línea vertical delgada, en uno de 3 colores de marca,
+// elegido de forma determinística según el título — misma entrada, mismo resultado.
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+function buildTitleAccentXml(seed){
+  const palette = ['003C6B','008651','702F8A'];
+  const color = palette[seed % palette.length];
+  const barW = 1000000 + (seed % 4) * 250000;
+  return '<p:sp><p:nvSpPr><p:cNvPr id="9001" name="TitleAccentBar"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+    + '<p:spPr><a:xfrm><a:off x="6475444" y="700000"/><a:ext cx="'+barW+'" cy="41275"/></a:xfrm>'
+    + '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>'
+    + '<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>'
+    + '<p:sp><p:nvSpPr><p:cNvPr id="9002" name="TitleAccentRule"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+    + '<p:spPr><a:xfrm><a:off x="6350000" y="829978"/><a:ext cx="18288" cy="3506288"/></a:xfrm>'
+    + '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="'+color+'"><a:alpha val="55000"/></a:srgbClr></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>'
+    + '<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>';
+}
+
+function setPicRoundedCorners(xml, rid){
+  const re = new RegExp('(<p:pic>(?:(?!<p:pic>|<\\/p:pic>)[\\s\\S])*?r:embed="'+rid+'"[\\s\\S]*?)<a:prstGeom prst="[^"]*"([^>]*)>(?:<a:avLst/>|<a:avLst>[\\s\\S]*?<\\/a:avLst>)<\\/a:prstGeom>([\\s\\S]*?<\\/p:pic>)');
+  return xml.replace(re, (m, pre, geomAttrs, post) => pre+'<a:prstGeom prst="roundRect"'+geomAttrs+'><a:avLst><a:gd name="adj" fmla="val 8000"/></a:avLst></a:prstGeom>'+post);
+}
+
+// Para "convertir una foto en diagrama de flujo": se lee la posición/tamaño exactos que
+// tenía esa foto en la plantilla, se quita la foto, y se dibujan N cajas (rounded rect)
+// + flechas dentro de exactamente esa misma área — así nunca se encima con nada más.
+function getPicBlock(xml, rid){
+  const re = new RegExp('<p:pic>(?:(?!<p:pic>|<\\/p:pic>)[\\s\\S])*?r:embed="'+rid+'"[\\s\\S]*?<\\/p:pic>');
+  const m = xml.match(re);
+  return m ? m[0] : null;
+}
+function getPicFrame(picBlock){
+  const m = picBlock.match(/<a:off x="(-?\d+)" y="(-?\d+)"\/><a:ext cx="(\d+)" cy="(\d+)"\/>/);
+  if(!m) return null;
+  return { x:+m[1], y:+m[2], cx:+m[3], cy:+m[4] };
+}
+function removePicBlock(xml, rid){
+  const re = new RegExp('<p:pic>(?:(?!<p:pic>|<\\/p:pic>)[\\s\\S])*?r:embed="'+rid+'"[\\s\\S]*?<\\/p:pic>');
+  return xml.replace(re, '');
+}
+function buildFlowDiagramXml(steps, frame, idBase){
+  const n = steps.length;
+  if(n===0) return '';
+  const gap = Math.round(frame.cx*0.035);
+  const boxW = Math.floor((frame.cx - gap*(n-1)) / n);
+  const boxH = Math.min(frame.cy, Math.round(boxW*0.62));
+  const y = frame.y + Math.round((frame.cy-boxH)/2);
+  let xml = '';
+  for(let i=0;i<n;i++){
+    const x = frame.x + i*(boxW+gap);
+    const id = idBase+i*2;
+    xml += '<p:sp><p:nvSpPr><p:cNvPr id="'+id+'" name="FlowStep'+(i+1)+'"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+      + '<p:spPr><a:xfrm><a:off x="'+x+'" y="'+y+'"/><a:ext cx="'+boxW+'" cy="'+boxH+'"/></a:xfrm>'
+      + '<a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 10000"/></a:avLst></a:prstGeom>'
+      + '<a:solidFill><a:srgbClr val="003C6B"/></a:solidFill></p:spPr>'
+      + '<p:txBody><a:bodyPr wrap="square" lIns="45720" tIns="27432" rIns="45720" bIns="27432" anchor="ctr"><a:normAutofit fontScale="85000"/></a:bodyPr><a:lstStyle/>'
+      + '<a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="1100" b="1" dirty="0"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:latin typeface="Grandview"/></a:rPr><a:t xml:space="preserve">'+escXml(steps[i])+'</a:t></a:r></a:p>'
+      + '</p:txBody></p:sp>';
+    if(i<n-1){
+      const ax = x+boxW, ay = y+Math.round(boxH/2);
+      xml += '<p:cxnSp><p:nvCxnSpPr><p:cNvPr id="'+(id+1)+'" name="FlowArrow'+(i+1)+'"/><p:cNvCxnSpPr/><p:nvPr/></p:nvCxnSpPr>'
+        + '<p:spPr><a:xfrm><a:off x="'+ax+'" y="'+ay+'"/><a:ext cx="'+gap+'" cy="0"/></a:xfrm>'
+        + '<a:prstGeom prst="straightConnector1"><a:avLst/></a:prstGeom>'
+        + '<a:ln w="19050"><a:solidFill><a:srgbClr val="003C6B"/></a:solidFill><a:tailEnd type="triangle"/></a:ln></p:spPr>'
+        + '<p:style><a:lnRef idx="1"><a:schemeClr val="accent1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="accent1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="accent1"/></a:effectRef><a:fontRef idx="minor"/></p:style>'
+        + '</p:cxnSp>';
+    }
+  }
+  return xml;
+}
+
 async function generarPPT(){
   const btn=document.getElementById('btnGenerar'), warningsBox=document.getElementById('warnings');
   warningsBox.innerHTML=''; btn.disabled=true; btn.textContent='Generando...';
@@ -616,9 +718,25 @@ async function generarPPT(){
         Object.assign(tokens, FIXED_LABELS[item.type]||{});
       }
       xml = applyTextTokens(xml, tokens);
+      if(item.type==='TITLE'){
+        xml = xml.replace('</p:spTree>', buildTitleAccentXml(hashStr(titulo||'x'))+'</p:spTree>');
+      }
 
       if(tpl.picRids){
+        let flowIdBase = 9000 + slideCounter*100;
         for(const [key, rid] of Object.entries(tpl.picRids)){
+          const flowSteps = item.data['flow_'+key];
+          if(flowSteps && flowSteps.length){
+            const picBlock = getPicBlock(xml, rid);
+            const frame = picBlock && getPicFrame(picBlock);
+            if(frame){
+              xml = removePicBlock(xml, rid);
+              const flowXml = buildFlowDiagramXml(flowSteps, frame, flowIdBase);
+              flowIdBase += flowSteps.length*2+2;
+              xml = xml.replace('</p:spTree>', flowXml+'</p:spTree>');
+              continue;
+            }
+          }
           const photo = item.data[key];
           // Si no hay foto, se sustituye por un placeholder gris en vez de dejar la foto
           // original de la plantilla de ejemplo (Scorpion) escondida ahí sin que se note.
@@ -629,6 +747,7 @@ async function generarPPT(){
           const filename = 'genphoto'+(mediaCounter++)+'.png';
           zip.file('ppt/media/'+filename, dataUrl.replace(/^data:[^;]+;base64,/,''), {base64:true});
           rels = setRelTarget(rels, rid, '../media/'+filename);
+          xml = setPicRoundedCorners(xml, rid);
         }
       }
 
