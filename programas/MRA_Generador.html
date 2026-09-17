@@ -63,6 +63,8 @@ button.small{padding:5px 9px;font-size:11.5px;border-radius:6px;background:var(-
 .status .err{background:rgba(230,60,60,.12);border:1px solid rgba(230,60,60,.4);color:#e64c4c;padding:8px 10px;border-radius:6px;}
 .status .info{color:var(--muted);}
 .paste-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.bar-track{height:7px;border-radius:5px;background:var(--bottom-btn-bg);overflow:hidden;margin-top:8px;}
+.bar-fill{height:100%;background:var(--btn-primary-bg);width:2%;transition:width .2s ease-out;}
 
 /* CARDS DE RIESGO — layout compacto horizontal */
 .risk-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:var(--input-bg);}
@@ -270,6 +272,14 @@ function newRisk(prefill){
 
 function addRiskCard(prefill){ risks.push(newRisk(prefill)); renderRisks(); }
 function removeRisk(id){ risks = risks.filter(r=>r.id!==id); renderRisks(); }
+function duplicateRisk(id){
+  const r = risks.find(x=>x.id===id); if(!r) return;
+  const copy = JSON.parse(JSON.stringify(r));
+  copy.id = 'r'+(++riskSeq);
+  copy.fotoRiesgo = null; copy.fotoMitigacion = null; // cada riesgo necesita su propia evidencia
+  risks.splice(risks.indexOf(r)+1, 0, copy);
+  renderRisks();
+}
 
 function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
@@ -284,7 +294,8 @@ function renderRisks(){
     const lv1 = hrnLevel(sc1), lv4 = hrnLevel(sc4);
     return '<div class="risk-card" data-id="'+r.id+'">'
       + '<div class="risk-head"><span class="badge">Riesgo #'+(idx+1)+'</span>'
-      + '<button class="small" onclick="removeRisk(\''+r.id+'\')">Eliminar</button></div>'
+      + '<span><button class="small" onclick="duplicateRisk(\''+r.id+'\')" title="Copia todo menos las fotos">Duplicar</button> '
+      + '<button class="small" onclick="removeRisk(\''+r.id+'\')">Eliminar</button></span></div>'
       + '<div class="rc-grid">'
 
         + '<div class="rc-col">'
@@ -397,6 +408,42 @@ async function callGemini(apiKey, promptText){
   }
   throw lastError||new Error('Todos los modelos están saturados. Intenta de nuevo.');
 }
+
+// Igual que callGemini pero por streaming (SSE), para poder mostrar avance real mientras responde.
+async function callGeminiStream(apiKey, promptText, onProgress){
+  let lastError=null;
+  for(const model of GEMINI_MODELS){
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':streamGenerateContent?alt=sse&key='+encodeURIComponent(apiKey);
+    try{
+      const resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{temperature:0.3}})});
+      if(resp.status===429||resp.status===503||resp.status===404){ lastError=new Error('['+model+'] HTTP '+resp.status); await new Promise(r=>setTimeout(r,800)); continue; }
+      if(!resp.ok || !resp.body){ const j=await resp.json().catch(()=>null); throw new Error('['+model+'] '+(j&&j.error&&j.error.message||('HTTP '+resp.status))); }
+      const reader=resp.body.getReader(), decoder=new TextDecoder();
+      let buf='', fullText='';
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        buf += decoder.decode(value, {stream:true});
+        const lines = buf.split('\n');
+        buf = lines.pop();
+        for(const line of lines){
+          if(!line.startsWith('data:')) continue;
+          const jsonStr = line.slice(5).trim();
+          if(!jsonStr) continue;
+          try{
+            const obj = JSON.parse(jsonStr);
+            const cand = obj.candidates && obj.candidates[0];
+            const parts = cand && cand.content && cand.content.parts;
+            if(parts){ fullText += parts.map(p=>p.text||'').join(''); if(onProgress) onProgress(fullText.length); }
+          }catch(e){ /* línea SSE incompleta, se ignora */ }
+        }
+      }
+      if(!fullText.trim()) throw new Error('['+model+'] Respuesta vacía.');
+      return {text:fullText, model};
+    }catch(err){ if(err.message && (err.message.includes('fetch')||err.message.includes('network'))) throw err; lastError=err; }
+  }
+  throw lastError||new Error('Todos los modelos están saturados. Intenta de nuevo.');
+}
 function getSavedApiKey(){ try{ return localStorage.getItem('mra_gemini_key')||''; }catch(e){ return ''; } }
 function saveApiKey(key){ try{ localStorage.setItem('mra_gemini_key',key); }catch(e){} }
 function toggleApiKeyPanel(){ const p=document.getElementById('apiKeyPanel'); p.style.display = p.style.display==='none'?'flex':'none'; }
@@ -438,9 +485,14 @@ async function procesarConIA(){
   if(!freeText){ status.innerHTML='<div class="err">Escribe la descripción de los riesgos antes de procesar.</div>'; return; }
   saveApiKey(apiKey);
   btn.disabled=true; btn.textContent='Procesando...';
-  status.innerHTML='<div class="info">Llamando a Gemini, un momento...</div>';
+  status.innerHTML='<div class="info">Llamando a Gemini...</div><div class="bar-track"><div class="bar-fill" id="iaBarFill" style="width:2%;"></div></div><div class="help" id="iaCharCount" style="margin:4px 0 0;">Conectando...</div>';
   try{
-    const {text,model} = await callGemini(apiKey, buildPrompt(freeText));
+    const {text,model} = await callGeminiStream(apiKey, buildPrompt(freeText), (chars)=>{
+      const fill = document.getElementById('iaBarFill'), cnt = document.getElementById('iaCharCount');
+      if(fill) fill.style.width = Math.min(92, 5 + chars/12) + '%';
+      if(cnt) cnt.textContent = 'Generando... '+chars+' caracteres recibidos';
+    });
+    const fillEl = document.getElementById('iaBarFill'); if(fillEl) fillEl.style.width='100%';
     const cleaned = text.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
     const parsed = JSON.parse(cleaned);
     const list = parsed.riesgos||[];
@@ -485,6 +537,46 @@ function setCellText(xml, ref, text){
 
 function colLetterToIndex(letters){ let n=0; for(let i=0;i<letters.length;i++) n = n*26 + (letters.charCodeAt(i)-64); return n-1; }
 
+// Ancla por la celda real (usa el mergeCell si existe) en vez de coordenadas fijas asumidas.
+function getCellAnchorRange(sheetXml, colLetters, row){
+  const re = /<mergeCell ref="([A-Z]+)(\d+):([A-Z]+)(\d+)"\/>/g;
+  let m;
+  while((m = re.exec(sheetXml))){
+    if(m[1]===colLetters && parseInt(m[2],10)===row){
+      return { fromCol: colLetterToIndex(m[1]), fromRow: parseInt(m[2],10)-1, toCol: colLetterToIndex(m[3])+1, toRow: parseInt(m[4],10)-1 };
+    }
+  }
+  const c = colLetterToIndex(colLetters);
+  return { fromCol: c, fromRow: row-1, toCol: c+1, toRow: row-1 };
+}
+
+// La hoja "MRA Full Assessment" no trae un drawing propio en la plantilla en blanco
+// (solo tiene printerSettings en su .rels) — hay que crearlo y enlazarlo la primera vez.
+async function ensureSheetDrawing(zip, sheetObj){
+  let sheetRels = await zip.file('xl/worksheets/_rels/sheet3.xml.rels').async('string');
+  const existing = sheetRels.match(/<Relationship[^>]*Type="[^"]*\/drawing"[^>]*Target="\.\.\/drawings\/(drawing[^".]*\.xml)"/);
+  if(existing) return existing[1];
+
+  const drawingName = 'drawingRiesgos1.xml';
+  zip.file('xl/drawings/'+drawingName, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"></xdr:wsDr>');
+  zip.file('xl/drawings/_rels/'+drawingName+'.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
+
+  let ct = await zip.file('[Content_Types].xml').async('string');
+  ct = ct.replace('</Types>', '<Override PartName="/xl/drawings/'+drawingName+'" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
+  zip.file('[Content_Types].xml', ct);
+
+  const usedIds = [...sheetRels.matchAll(/Id="rId(\d+)"/g)].map(m=>parseInt(m[1],10));
+  const nextId = 'rId'+((usedIds.length?Math.max(...usedIds):0)+1);
+  sheetRels = sheetRels.replace('</Relationships>', '<Relationship Id="'+nextId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/'+drawingName+'"/></Relationships>');
+  zip.file('xl/worksheets/_rels/sheet3.xml.rels', sheetRels);
+
+  const tag = '<drawing r:id="'+nextId+'"/>';
+  let xml = sheetObj.xml;
+  xml = xml.includes('<extLst') ? xml.replace('<extLst', tag+'<extLst') : xml.replace('</worksheet>', tag+'</worksheet>');
+  sheetObj.xml = xml;
+  return drawingName;
+}
+
 function buildPicXml(rId,fromCol,fromRow,toCol,toRow,idx){
   return '<xdr:twoCellAnchor editAs="oneCell">'+
     '<xdr:from><xdr:col>'+fromCol+'</xdr:col><xdr:colOff>38100</xdr:colOff><xdr:row>'+fromRow+'</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from>'+
@@ -500,10 +592,11 @@ function buildPicXml(rId,fromCol,fromRow,toCol,toRow,idx){
     '</xdr:pic><xdr:clientData/></xdr:twoCellAnchor>';
 }
 
-async function injectPhotos(zip, photoJobs){
+async function injectPhotos(zip, photoJobs, drawingName){
   if(!photoJobs.length) return;
-  let drawing=await zip.file('xl/drawings/drawing3.xml').async('string');
-  let rels=await zip.file('xl/drawings/_rels/drawing3.xml.rels').async('string');
+  const drawingPath='xl/drawings/'+drawingName, relsPath='xl/drawings/_rels/'+drawingName+'.rels';
+  let drawing=await zip.file(drawingPath).async('string');
+  let rels=await zip.file(relsPath).async('string');
   const BASE_RID=200, BASE_IMG=200;
   let picBlock='';
   photoJobs.forEach((p,i)=>{
@@ -515,8 +608,8 @@ async function injectPhotos(zip, photoJobs){
     picBlock+=buildPicXml(rId,p.fromCol,p.fromRow,p.toCol,p.toRow,BASE_IMG+i);
   });
   drawing=drawing.replace('</xdr:wsDr>',picBlock+'</xdr:wsDr>');
-  zip.file('xl/drawings/drawing3.xml',drawing);
-  zip.file('xl/drawings/_rels/drawing3.xml.rels',rels);
+  zip.file(drawingPath,drawing);
+  zip.file(relsPath,rels);
 }
 
 async function generarMRA(){
@@ -541,9 +634,11 @@ async function generarMRA(){
     zip.file('xl/worksheets/sheet2.xml',sheet2);
 
     let sheet3=await zip.file('xl/worksheets/sheet3.xml').async('string');
+    const sheetObj={xml:sheet3};
+    const drawingName = await ensureSheetDrawing(zip, sheetObj);
+    sheet3 = sheetObj.xml;
     const photoJobs=[];
-    const colE=colLetterToIndex('E'), colF=colLetterToIndex('F');
-    const colAD=colLetterToIndex('AD'), colAE=colLetterToIndex('AE');
+    let prevKey=null;
 
     risks.forEach((r,i)=>{
       const rowBase = 8 + i*5;
@@ -555,8 +650,15 @@ async function generarMRA(){
       if(!r.peligro) warnings.push('Riesgo #'+(i+1)+': falta la descripción del peligro.');
       if(!Object.values(r.personas).some(Boolean)) warnings.push('Riesgo #'+(i+1)+': no se marcó ninguna persona en riesgo.');
 
-      sheet3=setCellText(sheet3,'C'+rowBase, r.tarea);
-      sheet3=setCellText(sheet3,'D'+rowBase, r.peligro);
+      // Si la tarea+peligro es idéntica a la del riesgo anterior, no se repite el texto (misma agrupación visual del documento real).
+      const dupKey = r.tarea+'||'+r.peligro;
+      if(r.tarea && r.peligro && dupKey===prevKey){
+        // no escribir C/D de nuevo
+      } else {
+        sheet3=setCellText(sheet3,'C'+rowBase, r.tarea);
+        sheet3=setCellText(sheet3,'D'+rowBase, r.peligro);
+      }
+      prevKey = dupKey;
       PERSONAS_COLS.forEach(p=>{ if(r.personas[p.key]) sheet3=setCellText(sheet3, p.col+rowBase, 'X'); });
 
       // Etapa "sin salvaguardas" (K) y su reflejo en ISO 13849 (N)
@@ -583,13 +685,18 @@ async function generarMRA(){
         sheet3=setCellText(sheet3,col+(rowBase+3), r.stage4.np);
       });
 
-      const fromRow0 = rowBase-1, toRow0 = rowBase+4-1;
-      if(r.fotoRiesgo && r.fotoRiesgo.dataUrl) photoJobs.push({dataUrl:r.fotoRiesgo.dataUrl, ext:r.fotoRiesgo.ext, fromCol:colE, toCol:colF, fromRow:fromRow0, toRow:toRow0});
-      if(r.fotoMitigacion && r.fotoMitigacion.dataUrl) photoJobs.push({dataUrl:r.fotoMitigacion.dataUrl, ext:r.fotoMitigacion.ext, fromCol:colAD, toCol:colAE, fromRow:fromRow0, toRow:toRow0});
+      if(r.fotoRiesgo && r.fotoRiesgo.dataUrl){
+        const rg=getCellAnchorRange(sheet3,'E',rowBase);
+        photoJobs.push({dataUrl:r.fotoRiesgo.dataUrl, ext:r.fotoRiesgo.ext, fromCol:rg.fromCol, toCol:rg.toCol, fromRow:rg.fromRow, toRow:rg.toRow});
+      }
+      if(r.fotoMitigacion && r.fotoMitigacion.dataUrl){
+        const rg=getCellAnchorRange(sheet3,'AD',rowBase);
+        photoJobs.push({dataUrl:r.fotoMitigacion.dataUrl, ext:r.fotoMitigacion.ext, fromCol:rg.fromCol, toCol:rg.toCol, fromRow:rg.fromRow, toRow:rg.toRow});
+      }
     });
 
     zip.file('xl/worksheets/sheet3.xml',sheet3);
-    await injectPhotos(zip, photoJobs);
+    await injectPhotos(zip, photoJobs, drawingName);
 
     let workbook=await zip.file('xl/workbook.xml').async('string');
     workbook=workbook.replace(/<calcPr[^/]*\/>/, '<calcPr calcId="191028" fullCalcOnLoad="1"/>');
