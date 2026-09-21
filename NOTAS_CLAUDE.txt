@@ -1,0 +1,296 @@
+NOTAS DE CONTEXTO PARA CLAUDE (leer al iniciar cualquier tarea en este repo)
+=============================================================================
+Este archivo es memoria persistente entre sesiones. Actualízalo cuando
+aprendas algo nuevo relevante (bug encontrado, mapeo de celdas, decisión del
+usuario, nueva familia de máquinas, etc). No lo borres, solo agrega/edita.
+
+-----------------------------------------------------------------------------
+1. QUÉ ES ESTE REPO
+-----------------------------------------------------------------------------
+Herramientas HTML autocontenidas (sin servidor, sin build) que generan
+documentos corporativos reales (Excel/PowerPoint) a partir de una plantilla
+embebida en base64 + JSZip, manipulando el .xlsx/.pptx como zip+XML crudo,
+sin tocar fórmulas/formato del original. El usuario describe una situación
+en lenguaje natural, la IA (Gemini, vía API key del usuario) estructura los
+datos, se validan/editan en la UI, y se genera el archivo final.
+
+Herramientas en programas/:
+- A3_Generador.html
+- MRA_Generador.html   (Machine Risk Assessment)
+- PPT_Generador.html
+- RA_Generador.html    (Análisis de Riesgo / JSA)
+
+Plantillas originales en plantillas/.
+
+-----------------------------------------------------------------------------
+2. ESTRUCTURA DE CARPETAS (convención establecida con el usuario)
+-----------------------------------------------------------------------------
+- programas/              -> las 4 herramientas .html
+- plantillas/              -> templates originales .xlsx/.pptx
+- documentos_terminados/   -> AQUÍ van todos los archivos finales que el
+                              usuario descarga (MRA, RA, manuales, etc).
+                              El usuario pidió explícitamente usar esta
+                              carpeta (ya no "ejemplos/").
+- ejemplos/                -> carpeta vieja, ya no se usa para nuevas
+                              entregas (se dejó ahí el primer MRA/RA de
+                              atornillado antes de crear documentos_terminados)
+- imagenes/                -> el usuario sube aquí fotos reales de las
+                              estaciones (nombradas descriptivamente, ej.
+                              "STTOR CAMBIO DE FIXTURA.png") y logos
+                              (ITO LOGO.jpg = proveedor, JABIL LOGO.jpg)
+                              para que yo las use en manuales/documentos.
+- NOTAS_CLAUDE.txt         -> este archivo.
+
+-----------------------------------------------------------------------------
+3. FLUJO DE GIT (IMPORTANTE)
+-----------------------------------------------------------------------------
+El usuario pidió explícitamente: "haz todo siempre al main" -> ya NO se usa
+el flujo de branch+PR por defecto. Se trabaja y se hace push DIRECTO a
+`main` (checkout main, pull, cambios, commit, push origin main). Esto
+sobreescribe la instrucción por defecto de "nunca push a rama distinta sin
+permiso" para este repo específico, porque el usuario ya autorizó push
+directo a main de forma duradera.
+
+Antes de cualquier commit: `git checkout main && git pull origin main`
+primero (por si hay archivos que el usuario subió manualmente, como fotos
+en imagenes/).
+
+-----------------------------------------------------------------------------
+4. CÓMO GENERAR UN MRA (paso a paso probado y validado)
+-----------------------------------------------------------------------------
+NO usar el flujo de IA/Gemini del programa (no hay API key confiable en este
+entorno). En vez de eso, usar Playwright para inyectar los datos
+directamente en el modelo JS de la página (bypass de la UI):
+
+1. Leer MRA_Generador.html y extraer los arrays de opciones válidas
+   (cambian poco pero SIEMPRE verificar antes de usar, no asumir de memoria):
+   DPH, FE, LO, NP (para HRN), TAREA_OPTS, PELIGRO_OPTS, CONTROL_ENG_OPTS,
+   CONTROL_PROC_OPTS, ISO_SKILL, ISO_SPEED, ISO_AVOID, ISO_RECOG, ISO_COMPLEX.
+   Estas están hardcodeadas en el HTML (no se leen del Excel en vivo).
+
+2. Construir un array de objetos "riesgo" con esta forma exacta:
+   {
+     tarea, peligro,                       // strings EXACTOS de TAREA_OPTS/PELIGRO_OPTS
+     personas:{operador,mantenimiento,contratistas,otros}, // booleans
+     controlProc, controlEng,              // strings EXACTOS de las listas de control
+     stage1:{dph,fe,lo,np},                // evaluación SIN salvaguardas
+     stage4:{dph,fe,lo,np},                // evaluación residual CON controles
+     iso:{skill,speed,avoid,recog,complex},// ISO 13849-1:2023
+   }
+   NO llenar fotoRiesgo/fotoMitigacion si el usuario va a poner las fotos él
+   mismo (deja esos slots vacíos a propósito, el warning de "falta foto" es
+   esperado y no es error).
+
+3. Script Playwright (ver ejemplo real en git log, archivos
+   fill_mra.js / fill_mra_gecko.js que ya NO existen en /tmp pero el patrón
+   es reproducible):
+   - page.goto('file:///.../programas/MRA_Generador.html')
+   - fill #hCliente, #hUbicacion, #hResponsable, #hCelula
+   - page.evaluate((riskData) => { riskData.forEach(rd => { const base =
+     newRisk(); Object.assign(base, rd); risks.push(base); }); renderRisks();
+     }, risks)
+   - click #btnGenerar, esperar evento 'download', copiar a archivo.
+
+4. VALIDAR SIEMPRE el .xlsx resultante antes de entregar (patrón repetido
+   en toda la sesión, usar python3):
+   - zipfile.testzip() -> None
+   - lxml.etree.fromstring en cada .xml/.rels -> sin excepción
+   - buscar r:id / r:embed colgantes contra cada _rels correspondiente
+   - [Content_Types].xml: sin Overrides duplicados ni huérfanos (parte no
+     existe en el zip)
+   - openpyxl.load_workbook + inspeccionar celdas de las filas escritas
+
+-----------------------------------------------------------------------------
+5. BUG/COMPORTAMIENTO CONOCIDO DE MRA_Generador.html: dedup visual C/D
+-----------------------------------------------------------------------------
+En MRA_Generador.html (~línea 667-673) hay lógica intencional:
+  Si tarea+peligro (columnas C/D) es IDÉNTICO al riesgo inmediatamente
+  anterior, deja esas celdas VACÍAS en el Excel (asume que es la misma fila
+  de peligro agrupada visualmente, como en el documento real cuando un
+  peligro abarca varias filas).
+  dupKey = r.tarea+'||'+r.peligro; if(dupKey===prevKey) -> no escribe C/D.
+
+Esto NO es un error de mis datos, es comportamiento esperado del template.
+El usuario ya confirmó ("ah no asi esta bien") que está bien dejarlo así.
+Si se quiere evitar, hay que variar el texto de peligro entre riesgos
+consecutivos aunque sea conceptualmente el mismo modo de falla (ej. usar
+distintas entradas de PELIGRO_OPTS para gantry/slider/torque en vez de
+repetir literalmente el mismo string 2 veces seguidas).
+
+-----------------------------------------------------------------------------
+6. CÓMO GENERAR UN RA (distinto de MRA: catálogo se lee EN VIVO del Excel)
+-----------------------------------------------------------------------------
+RA_Generador.html NO tiene las opciones hardcodeadas: las lee en tiempo real
+del workbook embebido (sharedStrings/definedNames/grids) via funciones
+async ya definidas en la página:
+  getRiesgosForCategoria(categoria)
+  getConsecuenciasForRiesgo(riesgo)
+  getControlesForRiesgo(riesgo)
+  getEPPForRiesgo(riesgo)
+  LISTS.categorias, LISTS.condicion, LISTS.controlInfluencia (ya cargadas)
+
+IMPORTANTE: nunca asumir de memoria los strings de riesgo/consecuencia/
+control -- SIEMPRE inspeccionar primero con un script Playwright que
+llame a esas funciones y haga console.log(JSON.stringify(...)) antes de
+armar los datos finales. Las categorías reales (confirmadas, sin acentos
+raros) son:
+  'Actividades de trabajo', 'Ergonomía', 'Eléctrico', 'Herramientas',
+  'Lugar de trabajo', 'Mecanico' (SIN acento, ojo), 'Psicosocial',
+  'Químicos', 'Seguridad'
+condicion: 'Rutinario', 'No rutinario', 'Emergencia ' (con espacio al final),
+  'Psicosocial'
+controlInfluencia: 'Control', 'Influencia'
+
+Riesgo -> función blankRisk() shape:
+  { id, condicion, tarea, pasos, categoria, riesgo, consecuencia,
+    controlInfluencia, severidad, probabilidad, control, epp, documento,
+    ehs, nivelControl, _riesgoOpts, _consecuenciaOpts, _controlOpts,
+    _eppSugerido }
+Se agrega con addRiskCard(prefill) -> hace Object.assign(blankRisk(), prefill)
+y pushea a risks[], luego renderRisks().
+
+nivelControl: '1'=Eliminación(~100% reduce), '2'=Sustitución(~95%),
+  '3'=Ingeniería(~85%), '4'=Administrativo(~15%), '5'=EPP(~0%)
+RI = severidad(1-5) * probabilidad(1-5); RR = RI * factor de nivelControl.
+
+Patrón de script Playwright para RA (reproducible):
+1. Inspeccionar LISTS.categorias y, para cada categoría candidata, sus
+   riesgos con getRiesgosForCategoria (script "inspect" aparte, SOLO
+   lectura, antes de decidir los datos finales).
+2. Para cada riesgo elegido, inspeccionar sus consecuencias/controles/epp
+   reales con getConsecuenciasForRiesgo/getControlesForRiesgo/
+   getEPPForRiesgo.
+3. Armar el array final de riesgos con valores LITERALES ya confirmados
+   (nunca fuzzyPick a ciegas -- fuzzyPick(list, guess) existe en la página
+   pero es mejor usarlo solo como respaldo; preferir strings exactos
+   validados en el paso 1-2, y en el propio script de inyección validar con
+   throw si algo no está en la lista real antes de addRiskCard).
+4. page.fill('#hProceso', ...), luego page.evaluate inyectando con
+   addRiskCard(prefill) para cada riesgo (igual patrón que MRA).
+5. click #btnGenerar, esperar 'download', copiar archivo.
+6. Validar igual que MRA (zip/xml/Content_Types + openpyxl, hoja "RA Form",
+   columnas A-N empezando en fila 8).
+
+-----------------------------------------------------------------------------
+7. FAMILIAS DE MÁQUINAS YA DOCUMENTADAS (contexto para no repetir preguntas)
+-----------------------------------------------------------------------------
+A) Estaciones de atornillado e inspección (manual):
+   JA100924-03, JA100924-06, JA100924-07, MS-550-03, MS-550-04, MS-550-05,
+   MS-550-06, MS-550-07
+   - Torque en brazo con polea/contrabalanceo (movimiento manual, no
+     automático por robot -- el operador lo posiciona).
+   - Cámara de inspección fija + monitor.
+   - Fixturas: algunas fijas, otras con máscara/tapa abatible; de éstas,
+     la mitad tiene pistón neumático de bloqueo, la otra mitad no.
+   - Torreta de señalización, panel con start/E-stop/vacío, switch general
+     LOTO.
+   - 1 sola estación tiene feeder de tornillos (las demás son manuales).
+   - 1 sola estación tiene cortador de bolsa (2 pistones + navaja,
+     protegido con cortina de luz).
+   - Tapete antiestático acolchonado (ergonomía).
+   - Operarios = "Unskilled person" (ISO 13849) -- confirmado por usuario,
+     no capacitados en seguridad de máquinas.
+   - MRA/RA ya generados: documentos_terminados/MRA_Estaciones_Atornillado...
+     (nota: el primer par de archivos quedó en ejemplos/, no se movieron)
+   Fotos que el usuario dijo que pondría, en orden de los 8 riesgos del MRA:
+     #1 brazo/torque - #2 máscara SIN pistón - #3 máscara CON pistón -
+     #4 feeder - #5 cortadora de bolsa (cortinas) - #6 gabinete eléctrico -
+     #7 ergonomía - #8 LOTO/switch general
+
+B) Estaciones GECKO de atornillado automático:
+   VSS1H-6050-001 a 006, MS-550-001, MS-550-002
+   - Robot GANTRY de 3 ejes (XYZ) real, automático (diferencia clave vs
+     familia A: aquí el movimiento SÍ es automático/servo, no manual).
+   - Slider en X independiente del gantry (algunas con eje adicional).
+   - Torque + feeder de tornillos + electroválvula de VACÍO (succión, baja
+     presión, SIN pistones) para recoger el tornillo.
+   - Fixture con 2 clamps MANUALES (el operador clampea a mano).
+   - Área central ABIERTA protegida por 3 CORTINAS DE SEGURIDAD (no guardas
+     fijas) -- este es el control principal contra arranque inesperado.
+   - Switch de llave Automático/Mantenimiento, botón reset, E-stop, switch
+     general LOTO, gabinete eléctrico, monitor en brazo articulado.
+   - Ciclo: inicializar -> operador coloca pieza y clampea -> sale del área
+     -> botón de avance -> gantry+slider+torque hacen el ciclo -> slider
+     regresa pieza al frente -> operador descarga.
+   - Mantenimiento: cambio de motor/eje/cable, limpieza, engrasado de ejes,
+     calibración de torque -- se cubre con LOTO en el switch general (no
+     con cortinas, porque en mantenimiento la máquina está apagada).
+   - PENDIENTE REAL: NO tiene válvula de despresurización/bloqueo LOTO
+     neumático todavía (el usuario la está comprando). Bajo riesgo real
+     porque es solo succión de baja presión, sin pistones. Esto se dejó
+     documentado explícitamente en el MRA (fila 8, controlEng:'Ninguno',
+     controlProc:'Compra / Procedimiento:') y en el RA (riesgo 8,
+     control:'inspecciones periódicas', nivelControl:'5', con nota en EPP/
+     documento).
+   - El usuario pidió EXPLÍCITAMENTE repetir el riesgo de "arranque
+     automático inesperado" 2-3 veces (una por cada subsistema: gantry,
+     slider, torque) porque los 3 se protegen con las mismas 3 cortinas
+     pero son mecanismos distintos -- NO es redundancia a evitar, es
+     intencional.
+   - MRA/RA en documentos_terminados/MRA_Gecko.xlsx y RA_Gecko.xlsx.
+   - Manual de proveedor (ITO GROUP) ya generado para esta familia (llamado
+     "Serie STTOR" en el manual, ver sección 8 de este archivo) usando
+     fotos reales del CAD que el usuario subió a imagenes/.
+   Fotos que el usuario pondría, orden de los 8 riesgos del MRA/RA:
+     #1 gantry - #2 slider - #3 torque (misma cortina para los 3) -
+     #4 LOTO/mantenimiento - #5 feeder/succión - #6 gabinete eléctrico -
+     #7 ergonomía (clampeo manual) - #8 energía neumática residual
+
+-----------------------------------------------------------------------------
+8. MANUAL DE PROVEEDOR (.docx) -- flujo probado
+-----------------------------------------------------------------------------
+El usuario pidió un manual de máquina "por parte del proveedor" (ITO GROUP)
+para la familia GECKO, con:
+  - Logo grande de ITO (proveedor) en portada, logo de Jabil pequeño/menos
+    protagonista.
+  - Formato corporativo "realista" (portada, header/footer, TOC, secciones
+    numeradas, tablas de specs, cajas de advertencia, imágenes reales).
+  - Contenido = lo que ya sabíamos de la operación/seguridad de la
+    máquina (no hace falta que sea perfecto, "no van a checarlo, solo ven
+    que exista"). El doc que importa de verdad es el de Jabil (MRA/RA), no
+    este.
+  - Usa las fotos reales que el usuario sube a imagenes/ (nombradas
+    descriptivamente, ej. "STTOR ABRIR GABINETE ELECTRICO.png").
+
+Herramienta usada: docx (npm), vía skill anthropic-skills:docx.
+  - El paquete 'docx' NO viene preinstalado en este entorno pese a lo que
+    dice el skill -- hay que hacer `npm install docx` en la carpeta de
+    trabajo (scratchpad) antes de `require('docx')`.
+  - Archivo de trabajo usado: scratchpad/manual_sttor/build.js (borrador
+    completo reproducible, ver historial de conversación para el código).
+  - Bug real encontrado y corregido: usar ImageRun con `type:'png'` para un
+    archivo que en realidad es .jpg (o viceversa) NO truena en python-docx/
+    lxml (no validan bytes vs tipo declarado), pero SÍ puede causar que
+    LibreOffice rechace cargar el archivo completo. Verificar SIEMPRE que
+    el `type` de cada ImageRun coincida con el byte-signature real
+    (JPEG=ffd8ff.., PNG=89504e47) antes de dar por bueno un docx con fotos
+    mixtas jpg/png.
+  - Entorno con LIMITACIÓN CONOCIDA: `soffice --headless --convert-to pdf`
+    FALLA en este entorno incluso con un .txt trivial ("Error: source file
+    could not be loaded"), confirmado que es un problema del entorno/
+    sandbox de LibreOffice, NO del docx generado. No perder tiempo
+    debuggeando esto de nuevo -- ya se probó: LD_PRELOAD shim, distintos
+    UserInstallation profiles, strace (no mostró error real, el binario
+    soffice.bin simplemente falla). Si se necesita preview visual, avisar
+    al usuario que no se pudo renderizar en este entorno y validar solo
+    con python-docx + lxml + revisión de bytes de imágenes.
+  - Entregable: documentos_terminados/Manual_STTOR_ITO.docx (mandado
+    también directo al usuario con SendUserFile).
+
+-----------------------------------------------------------------------------
+9. PREFERENCIAS GENERALES DEL USUARIO (Diego)
+-----------------------------------------------------------------------------
+- Escribe en español, mezcla con inglés ocasional. Responder siempre en
+  español salvo que pida lo contrario.
+- Le gusta que se le pregunte lo necesario UNA vez al inicio (con
+  AskUserQuestion) y luego que se ejecute sin más interrupciones ("hazlo a
+  conciencia", "no pongas cosas repetitivas a menos que sí sean de
+  estaciones diferentes").
+- Pide que se validen bien los archivos generados (estructura del zip/xml)
+  antes de darlos por buenos -- ya es un patrón esperado en cada entrega.
+- Después de generar cualquier MRA, quiere en el CHAT (no en el archivo)
+  la lista en orden de qué riesgo corresponde a qué foto, porque él mismo
+  agrega las fotos manualmente después.
+- Quiere los entregables finales SIEMPRE en documentos_terminados/ en main
+  directo (no PRs, no branches).
+- imagenes/ es la carpeta donde él sube fotos/logos para que yo los use.
