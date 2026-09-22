@@ -294,3 +294,98 @@ Herramienta usada: docx (npm), vía skill anthropic-skills:docx.
 - Quiere los entregables finales SIEMPRE en documentos_terminados/ en main
   directo (no PRs, no branches).
 - imagenes/ es la carpeta donde él sube fotos/logos para que yo los use.
+  Cuando dice "ya deje las imágenes" pero `git pull origin main` no las
+  muestra aún, esperar unos segundos y reintentar el pull (han tardado en
+  aparecer más de una vez en esta sesión) antes de asumir que no las subió.
+
+-----------------------------------------------------------------------------
+10. FAMILIA DE MÁQUINAS: KASALIS PIXID 500 (embotellamiento compartido)
+-----------------------------------------------------------------------------
+Máquina única (no una familia de estaciones repetidas como A/B) compartida
+por TODAS las líneas de producción: SCORPION (4 variantes de FOV: 76°,
+95°, 131°/135°, 133.4°), MOOSE, GECKO, INFURROW. Cualquier falla de esta
+máquina detiene TODAS las líneas -- es el cuello de botella crítico de la
+planta. La mecánica/electrónica NO cambia entre modelos, solo cambian
+parámetros de visión (VIS) y offsets de dispensado (y a veces altura del
+dispensador o plato de la torna-mesa).
+
+Componentes:
+- Torna-mesa con motor grande, 4 estaciones, cada una con su propio pistón
+  neumático de clampeo.
+- Mini-gantry 1 (dispensado): 3 ejes, sensores de límite y drivers propios;
+  tooling = dispensador ViscoTech ECO-PEN450 (empuje neumático de adhesivo
+  DELO) + cilindro de clampeo propio.
+- Mini-gantry 2 (PnP): 3 ejes, sensores de límite y drivers propios;
+  tooling = gripper + cilindro de clampeo propio.
+- Sistema óptico: pogo de contacto (inspección MTF), eje Z con
+  retroalimentación de enfoque (motor a pasos), fuente/LED UV para curado
+  de DELO.
+- Seguridad: cortinas de seguridad, interlocks en puertas de acceso,
+  switch de llave Auto/Mantenimiento, E-stop, switch general LOTO Y
+  (a diferencia de GECKO) SÍ tiene válvula de bloqueo/sangrado LOTO
+  neumática instalada -- riesgo neumático residual bajo y bien controlado.
+- Punto de MAYOR RIESGO (confirmado por el usuario): el operador tiene
+  contacto DIRECTO con una de las 4 estaciones al cargar la pieza
+  manualmente -- al colocarla se activa el cilindro de clampeo de esa
+  estación. En el MRA se modeló con controlEng "Control de acceso:
+  controles a dos manos" (en RA, el catálogo no tiene esa opción exacta,
+  se usó "sensores" como aproximación y se documentó la discrepancia en el
+  campo EPP/notas).
+
+MRA/RA generados: documentos_terminados/MRA_Kasalis.xlsx y RA_Kasalis.xlsx
+(9 riesgos cada uno, mismo orden): 1-torna-mesa, 2-gantry dispensador,
+3-gantry PnP, 4-pistón de clampeo en estación de carga (mayor riesgo),
+5-exposición química DELO, 6-arranque inesperado en mantenimiento,
+7-energía neumática residual (SÍ tiene válvula, control "Válvulas de
+alivio"/"Aislamiento neumático: válvula de seguridad; Bloquear/sangrado"),
+8-eléctrico, 9-ergonomía.
+
+Manual de proveedor: documentos_terminados/Manual_Kasalis_ITO.docx.
+Sin fotos (el usuario no subió imágenes de esta máquina, solo dio texto),
+así que el manual quedó basado en tablas/texto únicamente (portada y
+header/footer sí llevan los logos ITO/Jabil). Incluye, además de las
+secciones estándar (specs, descripción, seguridad, operación):
+- Sección 6 "Cambio de Modelo": subir dispensador para MOOSE, cambio de
+  cartucho DELO (purgar burbujas), cambio de modelo general (parámetros
+  VIS + offsets ARC X=9.2/Y=6.4), cambio de plato, nota de que "cómo abrir
+  cada modelo" varía por unidad física de Kasalis (no hay detalle
+  suficiente para documentarlo genérico, se dejó como referencia al SOP
+  específico de Jabil).
+- Sección 7 "Guía de Solución de Fallas", transcrita y organizada del
+  texto crudo que dio el usuario, en 3 tablas: Dispensado (Fault 233
+  discontinuo/desplazado, Fault 222 visión), Comunicación/Pogo (rebote
+  rápido = falso contacto/pin atascado; rebote intermitente = interposer/
+  pines sucios/pieza mal puesta), Alineación (teach de Z, bypass manual
+  vía "rotary parking" + botón "align").
+- Sección 8 "Notas de Confiabilidad y Mejora Continua": Fault 102 (IPC
+  deadlock, sistemático, causa raíz desconocida, mitigación = timeout de
+  gripper 5s + force open) y Fault 155 (drift post-UV por desgaste de jaw
+  del gripper, 10-30% scrap), más lista larga de riesgos mecánicos/
+  eléctricos a vigilar (backlash eje Z, desalineamiento XY gripper, DELO
+  curado en lugares indebidos, sello de cilindro gripper, encoder Z sucio,
+  falta de UPS/backup de PLC, brownouts de 24V, degradación fuente UV) y
+  las 7 acciones de mitigación prioritarias que dio el usuario.
+  IMPORTANTE: esta sección es de CONFIABILIDAD/CALIDAD, no de seguridad a
+  personas -- por eso NO se incluyó en el MRA/RA (que son de riesgo físico
+  a personas). Si en el futuro se pide un FMEA o plan de mantenimiento
+  predictivo formal para Kasalis, esta sección 8 del manual es la base
+  lista para reutilizar.
+
+-----------------------------------------------------------------------------
+11. MANUAL GECKO (documentos_terminados/Manual_GECKO_ITO.docx)
+-----------------------------------------------------------------------------
+Igual que el de STTOR pero con imágenes propias de la familia GECKO (las
+sube el usuario a imagenes/ con prefijo "STGECKO "): ISOMETRICO DE LA
+MAQUINA, CAMBIO DE FIXTURA, PARO EMERGENCIA & BOTONES DE ACCION, TORQUE Y
+CAMARA (el torque de GECKO SÍ tiene cámara de referencia integrada, a
+diferencia del de STTOR), TORRETA ROJA AMARILLA VERDE, ABRIR PARTE TRASERA
+PARA MANTOS (acceso a rieles/ejes del gantry por panel trasero abatible,
+para lubricación/mantenimiento -- "mantos" en el nombre del archivo se
+interpretó como mantenimiento).
+Reusar el patrón: copiar build.js de un manual anterior, cambiar el array
+IMG de referencias de fotos y el contenido de las secciones 3/5/7/9 según
+los componentes reales que muestre cada foto nueva -- el resto de la
+estructura (cover, TOC, header/footer, estilos, secciones de seguridad/
+operación/mantenimiento preventivo/troubleshooting/garantía) se mantiene
+igual entre manuales de la misma familia de producto (estaciones de
+atornillado).
