@@ -31,6 +31,17 @@ Plantillas originales en plantillas/.
                               usuario descarga (MRA, RA, manuales, etc).
                               El usuario pidió explícitamente usar esta
                               carpeta (ya no "ejemplos/").
+- Documentacion_Maquinas/  -> el usuario sube aquí documentación REAL de
+                              fábrica (manuales de proveedor genuinos,
+                              PDFs de códigos de falla, specs, etc.),
+                              empezando por Kasalis. A diferencia de
+                              imagenes/, esto no es para insertar en un
+                              documento sino para que YO LEA estos archivos
+                              como fuente de verdad antes de tocar el MRA/
+                              RA/manual de esa máquina -- revisar esta
+                              carpeta primero si existe contenido para la
+                              máquina en cuestión, en vez de basarme solo
+                              en lo que el usuario describe en el chat.
 - ejemplos/                -> carpeta vieja, ya no se usa para nuevas
                               entregas (se dejó ahí el primer MRA/RA de
                               atornillado antes de crear documentos_terminados)
