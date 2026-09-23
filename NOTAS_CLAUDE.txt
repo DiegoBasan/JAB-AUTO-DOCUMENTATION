@@ -458,27 +458,66 @@ Ya generado (y validado con el mismo patrón de siempre: zip/xml/Content_Types +
   recién agregada con add_image(img,"B12") tiene anchor como STRING hasta
   que se guarda, no como objeto con ._from.
 
-PENDIENTE (no completado en esta sesión, requiere más trabajo de diseño):
-- Declaración de Seguridad (Machine Safety Statement) x7: la plantilla
-  real (plantillas/16-HS00-8018-00485-A DELCARACION DE SEGUIRDAD.xlsx,
-  hoja "Formato Template") NO es cell-based como el Placard -- es un
-  documento basado en FORMAS/TEXTBOXES dentro de xl/drawings/drawing2.xml
-  (grupos de shapes con texto tipo "MAQUINA o EQUIPO: ______ ID:______",
-  "FECHA:______", "RESPONSABLE ELABORACION DOCUMENTO:______", etc., más
-  cajas de color (verde=foto del dispositivo, azul=riesgos/EPP, rojo=LOTO)
-  con iconos y fotos). openpyxl no expone bien estas formas/textos (hay
-  que editar el XML crudo del drawing, similar al patrón JSZip que ya se
-  usa en los *_Generador.html). Replicarlo fielmente es del tamaño de
-  construir una herramienta nueva -- se decidió NO improvisarlo mal en
-  esta sesión. Próximo paso sugerido: o (a) editar drawing2.xml a mano con
-  regex apuntando los textos "______" que siguen a cada etiqueta conocida
-  (frágil pero rápido), o (b) construir una versión de contenido
-  equivalente pero con celdas/colores simples en vez de las formas exactas
-  del original (más robusto, menos fiel visualmente). Preguntar al usuario
-  cuál prefiere antes de intentarlo.
+YA RESUELTO -- Declaración de Seguridad (Machine Safety Statement) x7:
+La plantilla real (plantillas/16-HS00-8018-00485-A DELCARACION DE
+SEGUIRDAD.xlsx, hoja "Formato Template") NO es cell-based en su encabezado
+-- es texto dentro de FORMAS/TEXTBOXES en xl/drawings/drawing2.xml (no
+drawing1/3, esos son de las hojas "Ejem de llenado..." que hay que dejar
+intactas). Solución que funcionó (ver build_declaraciones.py en el
+historial de esta sesión):
+1. Con zipfile, leer xl/drawings/drawing2.xml como texto y usar
+   re.finditer(r'<a:t>([^<]*)</a:t>', xml) para obtener TODOS los runs de
+   texto en orden. Los índices 31-49 (0-indexed) son el bloque de
+   identificación: 31=MAQUINA/ID, 32=FECHA, 33-34=RESPONSABLE (2 runs),
+   38=FECHA LIBERACION/BUY-OFF, 39-45=MOC/PLCM/UBICACION (varios runs,
+   45=UBICACION), 46=No Doc de PLACARD, 47-49=VALIDADO EHS (3 runs).
+   Reemplazar SOLO esos índices por posición (nunca por texto exacto --
+   varios patrones tipo "_______" se repiten muchas veces en el resto del
+   documento para otras secciones no relacionadas). Escapar '&','<','>'
+   con xml.sax.saxutils.escape. Reempaquetar el zip reemplazando
+   únicamente esa entrada, todo lo demás byte-a-byte igual (nunca tocar
+   drawing1.xml/drawing3.xml).
+2. La tabla "Energía / Pasos de bloqueo y prueba / EPP" SÍ es cell-based
+   (fila 90 headers, filas 91-98 datos) pero el mapeo real NO es "un
+   bloque de 8 pasos por cada energía" como parecía a primera vista:
+   - F91 = label fijo "principal" (no tocar) -> F92 = VALOR de la energía
+     principal (ej. "Eléctrica").
+   - F94/F95 = label fijo "Energías "/"secundarias" (no tocar, 2 líneas)
+     -> F96 = VALOR de la energía secundaria si existe (ej. "Neumática"
+     para Kasalis); si no hay secundaria, dejar el "_____" original del
+     template tal cual (NO sobreescribir).
+   - Columna I (9), filas 91-98 = los 8 PASOS del procedimiento LOTO,
+     compartidos/genéricos para todas las energías de esa estación (no se
+     repite el bloque por energía, es una sola lista de 8 pasos).
+   - Columna P (16) = EPP, unas pocas filas (91,93,95 aprox.).
+3. No existe ningún <xdr:pic> real como placeholder de "foto del equipo"
+   en la plantilla (los 7 <xdr:pic> que trae son iconos decorativos
+   genéricos -- triángulo de advertencia, palomita, etc. -- NO fotos de
+   máquina). Insertar una foto ahí vía las formas agrupadas del drawing
+   complejo (96 anchors, grupos anidados con offsets) es alto riesgo de
+   corromper el archivo. Solución usada: NO tocar el drawing complejo para
+   la foto -- en su lugar, con openpyxl (segunda pasada, abriendo el xlsx
+   ya parcheado) hacer un ws.add_image() simple anclado en una celda libre
+   cercana (ej. B24) usando el sistema de anclaje normal de openpyxl, que
+   es independiente del drawing2.xml de formas y no interfiere con él.
+   Verificar con openpyxl.load_workbook(...)._images que el conteo sea
+   +1 respecto al original tras esto.
+Los 7 archivos DECLARACION_SEGURIDAD_*.xlsx en moc_2406/ ya están hechos
+así. Reutilizable si se necesita otra Declaración de Seguridad a futuro
+para otra estación/familia: mismo patrón, solo cambiar los valores del
+diccionario STATIONS.
+
+PENDIENTE:
 - Fotos específicas de las 7 estaciones: el usuario dijo que las va a
-  mandar después -- cuando lleguen, actualizar tanto el MRA como los 7
-  Placard (y la Declaración cuando exista) reemplazando los placeholders
-  actuales (fotos de STTOR/GECKO/Kasalis reusadas).
-- Autorizaciones (nombres de EHS/Ingeniería/SME) de los Placard: quedaron
-  como "Pendiente de asignar" -- pedir los nombres reales al usuario.
+  mandar después -- cuando lleguen, actualizar MRA, los 7 Placard y las 7
+  Declaración reemplazando los placeholders actuales (fotos de STTOR/
+  GECKO/Kasalis reusadas). Camera Attach Infurrow/ST6 no tiene ninguna
+  foto puesta todavía ni en Placard ni en Declaración (no había ningún
+  placeholder razonable disponible para ella específicamente).
+- Autorizaciones (nombres de EHS/Ingeniería/SME) tanto en los Placard como
+  en las Declaraciones: quedaron como "Pendiente de asignar" -- pedir los
+  nombres reales al usuario.
+- MOC number: se usó literalmente "2406" como número de MOC en las
+  Declaraciones (asumido del nombre de la carpeta que pidió el usuario,
+  "moc_2406") -- confirmar que ese es realmente el número de MOC oficial
+  y no solo un nombre de carpeta/fecha.
