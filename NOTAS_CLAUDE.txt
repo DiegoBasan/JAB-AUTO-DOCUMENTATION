@@ -400,3 +400,85 @@ estructura (cover, TOC, header/footer, estilos, secciones de seguridad/
 operación/mantenimiento preventivo/troubleshooting/garantía) se mantiene
 igual entre manuales de la misma familia de producto (estaciones de
 atornillado).
+
+-----------------------------------------------------------------------------
+12. MOC 2406 (moc_2406/) -- estaciones sin MRA/RA/Placard/Declaración
+-----------------------------------------------------------------------------
+El usuario subió 5 hojas de cálculo reales a Documentacion_Maquinas/
+(Inventario (1).xlsx, GECKO Stations.xlsx, MOOSE Stations.xlsx, Equipos
+John Deere.xlsx, MATRIZ CAMARA REV B.xlsx) con el inventario oficial de
+Jabil. Cruzarlas reveló que varias estaciones nunca tuvieron MOC/MRA/RA/
+Placard/Declaración porque entraron a planta antes de que existieran esos
+requisitos. El usuario ya creó el MOC para meterlas en regla y pidió los
+documentos de seguridad faltantes. Carpeta moc_2406/ contiene TODO lo
+referente a este MOC específico (MRA, RA, placards, declaraciones,
+manuales, estudios de ergonomía, etc. que se vayan agregando).
+
+Las 7 estaciones de este MOC:
+- Lens Adapter ELK (SN JEN-LADAPTER-001, ID JFN-400AB-001, Línea 212)
+- Front Assy ELK (SN JFW-FCOVER-001-M, ID JFN-00346-45, Línea 212)
+- Final Assy ELK (SN JFN-FASSEMBLY-001-M, ID JFN-00353-01, Línea 212)
+- Housing Attach Infurrow/ST4 (SN JFN-HOU-INF-00397, ID JFN-00397, Línea 211 Back End)
+- Camera Attach Infurrow/ST6 (SN JDE-NEU-INF-324433, ID JFI-03886-01, Línea 211 Back End)
+- Kasalis P50258 (ID JDS-KS-0258, Línea 202)
+- Kasalis P50199 (ID PIXID-199-01, Línea 212)
+Las 2 Kasalis son FÍSICAMENTE IDÉNTICAS (confirmado por el usuario) -> se
+puede reutilizar el mismo MRA/RA/contenido, solo cambiando el serial/ID.
+Las 5 de atornillado son manuales, SIN pistones de clampeo (confirmado por
+el usuario) -- solo tienen switch general LOTO, a diferencia de STTOR/
+GECKO que sí tienen mecanismos automáticos. Por eso su set de riesgos es
+mucho más corto (torque manual, ergonomía, eléctrico, LOTO -- nada de
+movimiento automático ni pistones).
+
+Ya generado (y validado con el mismo patrón de siempre: zip/xml/Content_Types + openpyxl):
+- MRA_InfurrowElkKas.xlsx / RA_InfurrowElkKas.xlsx: MRA y RA FUSIONADOS,
+  13 riesgos totales = 4 del grupo atornillado (genéricos, aplican a las 5
+  estaciones por igual) + los 9 de Kasalis ya validados antes (reusados
+  tal cual). Header dice "MOC 2406" y lista las 7 estaciones/seriales.
+- PLACARD_LOTO_*.xlsx (7 archivos, uno por estación): generados con
+  openpyxl EDITANDO DIRECTAMENTE la plantilla real de Jabil
+  (plantillas/16-HS00-8018-00477-A PLACARD LOTO.xlsx, hoja "Plantilla  1"),
+  NO con el patrón HTML+Playwright -- es más simple porque es solo
+  cell-fill + 2 fotos, sin fórmulas que preservar. Celdas clave: E4=nombre,
+  H4=línea, E5=serie, H5=fabricante, C6=ID de manto, H6=modelo, O18/P18=
+  segunda fuente de energía (solo Kasalis, neumática), P28=ubicación de
+  bloqueo eléctrico, O33/O34/R34=dispositivos de bloqueo + número de
+  candados, C50/E50/G50/K50=firmas de autorización (puestas como
+  "Pendiente de asignar" porque no hay nombres reales para estas 7
+  estaciones), C52/E52/I52=fechas. Las plantillas tienen 14 imágenes: 12
+  son iconos/símbolos boilerplate de Jabil (NO tocar), y 2 son fotos
+  reales de los puntos de bloqueo específicos de la máquina de ejemplo
+  (ancladas en las celdas B12 y B28 aprox., tamaño ~800x800) -- esas 2 SÍ
+  se reemplazaron por fotos de STTOR/GECKO/Kasalis ya disponibles, como
+  placeholder hasta que el usuario mande fotos reales de estas 7
+  estaciones específicas (ya prometió mandarlas).
+  Función Python reutilizable: build_placards.py (en el historial de la
+  sesión) -- reemplaza imagen por coordenada de ancla vieja, hay que
+  filtrar ws._images con hasattr(im.anchor,'_from') porque una imagen
+  recién agregada con add_image(img,"B12") tiene anchor como STRING hasta
+  que se guarda, no como objeto con ._from.
+
+PENDIENTE (no completado en esta sesión, requiere más trabajo de diseño):
+- Declaración de Seguridad (Machine Safety Statement) x7: la plantilla
+  real (plantillas/16-HS00-8018-00485-A DELCARACION DE SEGUIRDAD.xlsx,
+  hoja "Formato Template") NO es cell-based como el Placard -- es un
+  documento basado en FORMAS/TEXTBOXES dentro de xl/drawings/drawing2.xml
+  (grupos de shapes con texto tipo "MAQUINA o EQUIPO: ______ ID:______",
+  "FECHA:______", "RESPONSABLE ELABORACION DOCUMENTO:______", etc., más
+  cajas de color (verde=foto del dispositivo, azul=riesgos/EPP, rojo=LOTO)
+  con iconos y fotos). openpyxl no expone bien estas formas/textos (hay
+  que editar el XML crudo del drawing, similar al patrón JSZip que ya se
+  usa en los *_Generador.html). Replicarlo fielmente es del tamaño de
+  construir una herramienta nueva -- se decidió NO improvisarlo mal en
+  esta sesión. Próximo paso sugerido: o (a) editar drawing2.xml a mano con
+  regex apuntando los textos "______" que siguen a cada etiqueta conocida
+  (frágil pero rápido), o (b) construir una versión de contenido
+  equivalente pero con celdas/colores simples en vez de las formas exactas
+  del original (más robusto, menos fiel visualmente). Preguntar al usuario
+  cuál prefiere antes de intentarlo.
+- Fotos específicas de las 7 estaciones: el usuario dijo que las va a
+  mandar después -- cuando lleguen, actualizar tanto el MRA como los 7
+  Placard (y la Declaración cuando exista) reemplazando los placeholders
+  actuales (fotos de STTOR/GECKO/Kasalis reusadas).
+- Autorizaciones (nombres de EHS/Ingeniería/SME) de los Placard: quedaron
+  como "Pendiente de asignar" -- pedir los nombres reales al usuario.
