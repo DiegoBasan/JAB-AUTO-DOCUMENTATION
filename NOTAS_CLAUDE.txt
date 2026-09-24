@@ -507,17 +507,82 @@ así. Reutilizable si se necesita otra Declaración de Seguridad a futuro
 para otra estación/familia: mismo patrón, solo cambiar los valores del
 diccionario STATIONS.
 
+ACTUALIZACIÓN (sesión siguiente) -- el usuario ya tiene sus propios Placard y
+Declaración (los ajustó él mismo porque "no jaló bien" el resultado
+anterior) -- YA NO pedir/regenerar esos 2 documentos para este MOC, se dan
+por resueltos por el usuario directamente. El número de MOC sigue SIN
+asignar -- dejar el campo vacío/"pendiente" en vez de "2406" (ese nombre
+era solo el de la carpeta, nunca fue un número real de MOC).
+
+Lo que sí pidió generar en esta sesión, y ya se hizo:
+- MRA_InfurrowElk.xlsx y RA_InfurrowElk.xlsx (moc_2406/): SOLO las 5
+  estaciones de atornillado/torque (Lens Adapter ELK, Front Assy ELK, Final
+  Assy ELK, Housing Attach Infurrow/ST4, Camera Attach Infurrow/ST6) --
+  YA NO incluyen Kasalis (se separó del MRA/RA fusionado anterior
+  MRA_InfurrowElkKas.xlsx/RA_InfurrowElkKas.xlsx, que se BORRARON del repo
+  por quedar obsoletos/reemplazados por esta versión).
+- RA_Kasalis.xlsx (moc_2406/): SOLO Kasalis (ahora nombradas por el usuario
+  "Kasalis Scorpion" y "Kasalis ELK", ya no P50258/P50199 -- ver nota más
+  abajo). El usuario confirmó que el MRA de Kasalis que ya existía (fuera
+  de esta sesión) estaba bien, así que NO se regeneró un MRA de Kasalis
+  nuevo, solo el RA (9 riesgos, idéntico contenido al grupo B usado
+  anteriormente en el RA fusionado).
+- El usuario subió fotos REALES de las 5 estaciones a imagenes/ (llegaron
+  vía git pull, no aparecían hasta hacer `git fetch origin main` +
+  `git pull` -- si "ya subí las fotos" pero `git status` sale limpio,
+  SIEMPRE hacer fetch/pull antes de asumir que no llegaron, pueden haberse
+  subido por otro medio/sesión). Archivos relevantes:
+  "Lens adapter ELK de frente.jpg", "Front assy de frente.jpg",
+  "Final Assy ELK maquina de frente.jpg",
+  "Housing Attach Infurrow maquina de frentejpg.jpg",
+  "Housing Attach Infurrow fixtura con cilindros neumaticosjpg.jpg",
+  "Housing Attach Infurrow Sistema FRL sin loto, se bloquearia toda la
+  entrada con LOTO de esos donde pones una cajota encima.jpg",
+  "Camara Attach Infurrow de frente.png",
+  "Camara Attach Infurrow  torque inalambrico.png",
+  "Camara & Housing Attach Infurrow switch loto.png" (switch general
+  compartido, eléctrico),
+  "entrada de aire para infurrow y elk, la aplicacion loto esta en la
+  imagen 525.jpg" (punto de acople rápido de aire comprimido, compartido),
+  "imagen 525 bloqueo de loto neumatico.jpg" (foto de referencia genérica,
+  NO es de estas máquinas -- es un ejemplo de catálogo de un clip de
+  bloqueo neumático tipo C en un acople rápido, el usuario pidió usarla
+  como foto de MITIGACIÓN en los riesgos neumáticos porque estas 5
+  estaciones NO tienen válvula LOTO neumática integrada).
+- HALLAZGO CLAVE del usuario: las 5 estaciones de atornillado NO tienen
+  pistones de clampeo automático (ya sabíamos esto), pero SÍ tienen
+  componentes neumáticos en Housing Attach Infurrow/ST4 (fixtura con
+  cilindros) y Final Assy ELK (fixtura con clamps + FRL) -- y NINGUNA de
+  las 5 tiene un dispositivo de bloqueo/LOTO neumático integrado. Por eso
+  el MRA/RA de esta versión agrega 2 filas de riesgo NUEVAS (no estaban en
+  el MRA/RA fusionado anterior) específicas de esto: "energía residual en
+  cilindros de fixtura/FRL sin dispositivo integrado" y "punto de conexión
+  de aire comprimido (quick-disconnect) sin dispositivo integrado" -- ambas
+  con foto de mitigación = imagen 525 (clip de bloqueo tipo C portátil +
+  candado/tarjeta en el acople rápido, en vez de una válvula LOTO fija).
+- El RA_Generador ya tenía validada la combinación
+  categoria='Mecanico'/riesgo='Sistema de presión'/consecuencia=
+  'Laceraciones'/control='Válvulas de alivio' del RA de Kasalis anterior;
+  se reutilizó literal para estas 2 filas nuevas (evita tener que
+  re-inspeccionar getRiesgosForCategoria en vivo).
+- NOMBRES ACTUALIZADOS: el usuario ahora se refiere a las 2 Kasalis como
+  "Kasalis Scorpion" y "Kasalis ELK" (antes P50258/P50199) -- no se volvió
+  a asumir el mapeo 1:1 con esos seriales porque no fue confirmado en esta
+  sesión; el header del RA_Kasalis.xlsx solo dice "Kasalis PIXID 500 -
+  Scorpion y ELK, Dispensing and Alignment (2 unidades físicamente
+  idénticas)" sin comprometerse a un serial específico por nombre.
+
 PENDIENTE:
-- Fotos específicas de las 7 estaciones: el usuario dijo que las va a
-  mandar después -- cuando lleguen, actualizar MRA, los 7 Placard y las 7
-  Declaración reemplazando los placeholders actuales (fotos de STTOR/
-  GECKO/Kasalis reusadas). Camera Attach Infurrow/ST6 no tiene ninguna
-  foto puesta todavía ni en Placard ni en Declaración (no había ningún
-  placeholder razonable disponible para ella específicamente).
-- Autorizaciones (nombres de EHS/Ingeniería/SME) tanto en los Placard como
-  en las Declaraciones: quedaron como "Pendiente de asignar" -- pedir los
-  nombres reales al usuario.
-- MOC number: se usó literalmente "2406" como número de MOC en las
-  Declaraciones (asumido del nombre de la carpeta que pidió el usuario,
-  "moc_2406") -- confirmar que ese es realmente el número de MOC oficial
-  y no solo un nombre de carpeta/fecha.
+- Fotos específicas de Camera Attach Infurrow/ST6: sigue sin tener una
+  foto de riesgo propia claramente dedicada (se usó una genérica de
+  gabinete eléctrico reutilizada + la foto de switch compartida). Si el
+  usuario manda una foto específica de esa estación, actualizar el MRA.
+- MOC number real: sigue sin asignar -- el header de MRA_InfurrowElk.xlsx
+  y RA_InfurrowElk.xlsx/RA_Kasalis.xlsx dice literalmente "MOC (pendiente
+  de numero)". Actualizar en cuanto el usuario lo tenga.
+- Los Placard LOTO y Declaración de Seguridad de este MOC ya NO son
+  responsabilidad de esta sesión (el usuario los rehizo/corrigió él mismo)
+  -- los 7 archivos viejos en moc_2406/ (PLACARD_LOTO_*.xlsx,
+  DECLARACION_SEGURIDAD_*.xlsx) quedaron en el repo tal cual se generaron
+  antes pero pueden estar DESACTUALIZADOS/no ser la versión final; no
+  tocarlos a menos que el usuario pida explícitamente una actualización.
