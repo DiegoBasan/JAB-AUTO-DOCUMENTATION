@@ -525,8 +525,34 @@ Lo que sí pidió generar en esta sesión, y ya se hizo:
   "Kasalis Scorpion" y "Kasalis ELK", ya no P50258/P50199 -- ver nota más
   abajo). El usuario confirmó que el MRA de Kasalis que ya existía (fuera
   de esta sesión) estaba bien, así que NO se regeneró un MRA de Kasalis
-  nuevo, solo el RA (9 riesgos, idéntico contenido al grupo B usado
-  anteriormente en el RA fusionado).
+  nuevo, solo el RA.
+  CORREGIDO en una vuelta posterior (8 riesgos, ya NO 9): el usuario aclaró
+  que en operación normal el operador NO tiene alcance físico a la
+  torna-mesa ni a ninguno de los 2 gantries (dispensador/PnP) -- la máquina
+  está cerrada y esos mecanismos quedan detrás de las cortinas de
+  seguridad/guardas; el operador SOLO tiene acceso real a la estación de
+  carga. Por eso las filas de "operación normal - torna-mesa/gantry
+  dispensador/gantry PnP" NO deben existir como riesgos de operación
+  normal -- ese riesgo de partes móviles internas solo aplica cuando
+  MANTENIMIENTO desactiva los interlocks para intervenir, así que se
+  consolidó en una sola fila de mantenimiento ("intervención con interlocks
+  de puerta desactivados (torna-mesa, gantry dispensador, gantry PnP)").
+  En operación normal (rutinario) se dejaron los riesgos REALES del
+  operador: 1-carga de material (mayor riesgo, pistón de clampeo),
+  2-descarga de material, 3-limpieza de la máquina, 4-ergonomía (manejo
+  repetitivo de carga/descarga), 5-químico (contacto con residuos de DELO
+  cerca de la estación de carga). No rutinario/mantenimiento: 6-interlocks
+  desactivados (los 3 mecanismos internos), 7-energía neumática residual,
+  8-eléctrico. REGLA GENERAL a aplicar en cualquier RA/MRA futuro: antes de
+  listar un riesgo bajo "operación normal", confirmar que el operador
+  realmente tiene acceso físico a ese mecanismo durante el ciclo normal --
+  si está detrás de guardas/cortinas y solo es alcanzable con los
+  interlocks desactivados, el riesgo va en la sección de MANTENIMIENTO, no
+  en operación normal.
+  Campo "documento" (documento estandarizado) de TODAS las filas del RA de
+  Kasalis = "16-AT40-3318-00005" (pedido explícito del usuario, reemplaza
+  los strings descriptivos que se usaban antes como "SOP Operación Kasalis
+  PIXID 500" / "Procedimiento LOTO de la estación").
 - El usuario subió fotos REALES de las 5 estaciones a imagenes/ (llegaron
   vía git pull, no aparecían hasta hacer `git fetch origin main` +
   `git pull` -- si "ya subí las fotos" pero `git status` sale limpio,
