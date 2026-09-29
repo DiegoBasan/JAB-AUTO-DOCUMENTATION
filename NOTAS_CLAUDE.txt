@@ -582,6 +582,25 @@ insertar "Estación / Nombre de máquina: X    Número de serie: Y" en negrita
 -- el resto de las 191 párrafos y todas las tablas quedan sin tocar.
 Script: scratchpad/manuales_16/build_manuales.py.
 
+ACTUALIZACIÓN: cada manual de mantenimiento ahora lleva 2 fotos de
+referencia insertadas (no solo texto): una foto general "isométrico de la
+máquina" justo debajo de la línea de identificación de estación (párrafo
+5), y una foto del gabinete/panel eléctrico justo después del encabezado
+"MANTENIMIENTO ELEMENTOS ELÉCTRICO" -- ambas con una leyenda en cursiva
+aclarando que es una foto de referencia de la FAMILIA, no necesariamente
+la unidad física exacta (porque no hay foto dedicada de cada una de las
+16 estaciones, solo de la familia STTOR/STGECKO/GECKO genérica). Selección
+de imágenes por familia: las 8 Moose/Scorpion usan imagenes/STTOR *.png
+(familia "atornillado manual", ya usada para esa familia en sesiones
+previas); las 8 GECKO usan imagenes/STGECKO *.png / GECKO *.png. Técnica:
+python-docx `paragraph.insert_paragraph_before()` + `run.add_picture(...)`
+para insertar un párrafo con imagen justo antes de un párrafo ancla
+localizado por texto (buscar índice con enumerate() sobre d.paragraphs,
+NO usar `d.paragraphs.index(p)` -- python-docx genera objetos Paragraph
+nuevos en cada acceso a `.paragraphs`, así que la comparación por
+identidad/igualdad falla con ValueError "is not in list"). Script:
+scratchpad/manuales_16/build_manuales2.py (reemplaza a build_manuales.py).
+
 Las 16 estaciones (Manual + Ergonomía x cada una, 32 archivos totales) y
 sus datos reales (Área confirmada en Documentacion_Maquinas/
 Inventario (1).xlsx, todas Building 2 / Línea 202 excepto Dogbone Scorpion
