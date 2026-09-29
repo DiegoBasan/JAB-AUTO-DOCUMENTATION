@@ -485,6 +485,117 @@ confirma que alguna(s) NO tienen pistón, quitar las filas 10/11 (Partes
 Neumáticas) y 13 (Mantenimiento Neumático) de esa(s) estación(es)
 específica(s).
 
+ACTUALIZACIÓN: el usuario corrigió que RA_Moose_Scorpion.xlsx debía usar
+ESTRICTAMENTE el formato estándar RA_Generador.html/RA Form (el mismo que
+RA_Gecko.xlsx, RA_Kasalis.xlsx, etc.), NO la réplica cruda de la tabla del
+PDF escaneado -- la tabla plana solo sirvió como FUENTE DE INFORMACIÓN para
+extraer los peligros reales, no como formato final. Se regeneró
+RA_Moose_Scorpion.xlsx (documentos_terminados/) con el patrón Playwright de
+siempre, traduciendo los peligros del PDF (Poka Yoke, Scanner, Partes Fijas
+(Fixtura), Partes Móviles (Atornillador), Conexiones Eléctricas, Partes
+Neumáticas, Mantenimiento eléctrico/neumático/atornillador) a
+categoria/riesgo/consecuencia/control VALIDADOS en vivo contra RA_Generador
+(10 filas, un solo archivo consolidado para las 8 estaciones, igual patrón
+que RA_Gecko.xlsx). Mapeo usado (útil para no re-inspeccionar si se repite):
+  Poka Yoke/Scanner -> Mecanico/Partes móviles/Laceración/Resguardos mecánicos
+  Partes Fijas (Fixtura)/Atornillador -> Mecanico/Partes móviles/Atrapamiento/Resguardos mecánicos
+  Conexiones Eléctricas (islas) -> Eléctrico/Conductores energizados/Electrocución/detección de voltaje
+  Partes Neumáticas (pistones) -> Mecanico/Partes móviles/Atrapamiento/sensores
+  Mantenimiento eléctrico -> Eléctrico/Conductores energizados/Electrocución/LOTO
+  Mantenimiento neumático -> Mecanico/Sistema de presión/Laceraciones/Válvulas de alivio
+  Mantenimiento a Atornillador -> Mecanico/Partes móviles/Atrapamiento/LOTO
+Con esta misma info se MEJORÓ RA_Gecko.xlsx (regenerado completo, de 8 a 12
+filas) agregando 4 riesgos que el PDF de ejemplo reveló que faltaban en la
+familia GECKO por ser hazards estándar de cualquier estación de atornillado/
+inspección JD: Poka Yoke, escáner fijo, contacto con partes fijas de la
+fixtura (además de los clamps ya cubiertos), e islas de conexión eléctrica.
+El PDF escaneado (RA_SCORPION.pdf) se conserva solo como fuente de
+referencia/lectura, no como plantilla de salida.
+
+-----------------------------------------------------------------------------
+12c. Manuales de Mantenimiento (Manuales_Mantenimiento/) y Estudios de
+     Ergonomía (Estudios_Ergonomia/), x16 estaciones -- REGLA: duplicar
+     plantilla real, nunca reconstruir desde cero
+-----------------------------------------------------------------------------
+El usuario subió 2 plantillas reales a plantillas/:
+  "16-AT35-3318-00021-A MANTENIMIENTO PREVENTIVO.docx" -- checklist genérico
+  de mantenimiento preventivo mensual para "equipos semi-automaticos John
+  Deere", aplica igual a toda la familia GECKO/Moose/Scorpion (mismo
+  contenido técnico sin importar la estación específica -- no tiene ningún
+  campo de nombre/serial de máquina en la plantilla original).
+  "BOT ASSY GECKO.xlsm" -- herramienta real de evaluación ergonómica
+  (estilo REBA/NOM-036, macro-habilitada VBA) con 8 hojas
+  (Mov/Levantamiento/Transporte/Equipo/sin auxiliar/con auxiliar/Resultado/
+  Observaciones), fórmulas y checkboxes ligados entre hojas. Hoja "Mov"
+  filas 2-7 tienen los datos de identificación: B2/E2=Negocio (siempre
+  "John Deere"), B3/E3=Línea (en este archivo real contiene el ÁREA física,
+  ej. "Cuarto Limpio ISO 7"), B4/E4=Área (en este archivo real contiene el
+  NOMBRE/estación, ej. "Estación de BOT ASSY GECKO"), B5/E5=Fecha,
+  B6/E6=Modelo (en este archivo real contiene el NÚMERO DE SERIE), B7/E7=
+  Realizado por.
+
+El usuario pidió EXPLÍCITAMENTE para el xlsm: "no modifiques absolutamente
+nada, solamente cambia el nombre y serial number y los detalles que pida
+la maquina" y para ambos: "recuerda no crear un archivo nuevo desde 0, si
+no duplicar los files base y solamente cambiar la info de texto."
+
+BUG REAL encontrado y evitado: abrir+resave un .xlsm complejo con
+openpyxl (incluso con keep_vba=True) NO hace roundtrip completo -- se
+pierden xl/comments*.xml (comentarios de celda), xl/printerSettings/*.bin,
+xl/calcChain.xml, customXml/* (metadata), y xl/sharedStrings.xml se
+reescribe distinto. Esto SÍ cuenta como "modificar" el archivo aunque las
+fórmulas sigan funcionando -- viola la instrucción del usuario. Comprobado
+comparando el listado de nombres del zip original vs el guardado por
+openpyxl (quedaban ~20 archivos internos distintos/faltantes).
+SOLUCIÓN (mismo patrón ya usado para Declaración de Seguridad): edición
+quirúrgica de zip+XML crudo, NO abrir con openpyxl para guardar.
+1. Ubicar a qué sheetN.xml corresponde la hoja "Mov" vía xl/workbook.xml
+   (<sheet name="Mov" r:id="rId1"/>) -> xl/_rels/workbook.xml.rels
+   (rId1 -> worksheets/sheet1.xml).
+2. Los valores de E2/E3/E4/E6 son shared strings (`<c r="E3" s="214"
+   t="s"><v>530</v></c>`, el número es un índice a sharedStrings.xml).
+   NO editar sharedStrings.xml (ese índice puede estar usado en más
+   celdas/hojas) -- en vez de eso, convertir la celda puntual a
+   INLINE STRING: reemplazar `t="s"><v>NNN</v>` por
+   `t="inlineStr"><is><t xml:space="preserve">NUEVO TEXTO</t></is>`,
+   conservando el mismo atributo de estilo `s="214"`. Esto es válido OOXML
+   estándar y no toca ninguna otra celda/hoja.
+3. Reempaquetar el zip copiando TODOS los demás archivos byte-a-byte sin
+   tocar (mismo patrón `zipfile` copy-and-replace-one-entry de siempre).
+Validado: comparando el zip resultante contra el original, TODOS los
+demás archivos internos son bit-a-bit idénticos (namelists idénticos,
+0 archivos con contenido distinto salvo sheet1.xml), fórmulas (ej. AG2,
+L8) siguen intactas, openpyxl.load_workbook(keep_vba=True) las lee bien.
+Script reutilizable: scratchpad/ergo_16/build_ergonomia2.py (función
+`patch_cell(xml_text, ref, new_text)` genérica por celda).
+
+Para el .docx de mantenimiento SÍ se usó python-docx normal (abrir +
+d.paragraphs[4].add_run(...) + guardar) porque .docx es mucho más simple
+que .xlsm (sin macros/fórmulas/comments complejos) y se validó que el
+roundtrip de python-docx es seguro: comparando contra el original, el
+conteo de párrafos es idéntico (191), las 5 imágenes son bit-a-bit
+idénticas, el texto del footer/header es idéntico -- solo cambian bytes de
+serialización XML sin pérdida de contenido (orden de atributos, etc.), a
+diferencia de openpyxl con este xlsm complejo. El párrafo 4 (vacío en la
+plantilla original, justo debajo de "Tiempo Estimado") se usó para
+insertar "Estación / Nombre de máquina: X    Número de serie: Y" en negrita
+-- el resto de las 191 párrafos y todas las tablas quedan sin tocar.
+Script: scratchpad/manuales_16/build_manuales.py.
+
+Las 16 estaciones (Manual + Ergonomía x cada una, 32 archivos totales) y
+sus datos reales (Área confirmada en Documentacion_Maquinas/
+Inventario (1).xlsx, todas Building 2 / Línea 202 excepto Dogbone Scorpion
+que es Línea 211 / Back End):
+  Dogbone Scorpion (JA100924-07), Front Assy Scorpion (JA100924-03),
+  Final Assy Scorpion (JA100924-06), Lens Adapter Moose/Scorpion
+  (MS-550-03), Back Assy Moose/Scorpion (MS-550-05), Front Assy Moose
+  (MS-550-04), Final Assy Moose (MS-550-06), Brackets Assy Moose
+  (MS-550-07), Lens Adapter Gecko (VSS1H-6050-001), Ampseal Attach Gecko
+  (VSS1H-6050-002), Bottom Attach Gecko (VSS1H-6050-003), Leds Attach
+  Gecko (VSS1H-6050-004), Moisture Absorber Attach Gecko (VSS1H-6050-005),
+  Final Assy Gecko (VSS1H-6050-006), Cartridge Attach Gecko (MS-550-001),
+  Gasket Attach Gecko (MS-550-002).
+
 -----------------------------------------------------------------------------
 12. MOC 2406 (moc_2406/) -- estaciones sin MRA/RA/Placard/Declaración
 -----------------------------------------------------------------------------
