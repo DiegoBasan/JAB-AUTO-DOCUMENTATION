@@ -26,11 +26,7 @@ Plantillas originales en plantillas/.
 2. ESTRUCTURA DE CARPETAS (convención establecida con el usuario)
 -----------------------------------------------------------------------------
 - programas/              -> las 4 herramientas .html
-- plantillas/              -> templates originales .xlsx/.pptx
-- documentos_terminados/   -> AQUÍ van todos los archivos finales que el
-                              usuario descarga (MRA, RA, manuales, etc).
-                              El usuario pidió explícitamente usar esta
-                              carpeta (ya no "ejemplos/").
+- plantillas/              -> templates originales .xlsx/.pptx/.docx/.xlsm
 - Documentacion_Maquinas/  -> el usuario sube aquí documentación REAL de
                               fábrica (manuales de proveedor genuinos,
                               PDFs de códigos de falla, specs, etc.),
@@ -42,15 +38,39 @@ Plantillas originales en plantillas/.
                               carpeta primero si existe contenido para la
                               máquina en cuestión, en vez de basarme solo
                               en lo que el usuario describe en el chat.
-- ejemplos/                -> carpeta vieja, ya no se usa para nuevas
-                              entregas (se dejó ahí el primer MRA/RA de
-                              atornillado antes de crear documentos_terminados)
 - imagenes/                -> el usuario sube aquí fotos reales de las
                               estaciones (nombradas descriptivamente, ej.
                               "STTOR CAMBIO DE FIXTURA.png") y logos
                               (ITO LOGO.jpg = proveedor, JABIL LOGO.jpg)
                               para que yo las use en manuales/documentos.
 - NOTAS_CLAUDE.txt         -> este archivo.
+- Old Files/                -> REORGANIZACIÓN (pedida por el usuario): aquí
+                              viven las entregas YA HECHAS que quedaron
+                              archivadas/históricas, ya no en el root del
+                              repo. Contiene:
+                                - Old Files/documentos_terminados/ (todo lo
+                                  que antes vivía en documentos_terminados/
+                                  en el root -- MRA/RA/manuales/ergonomía/
+                                  Maestro_Maquinas de STTOR, GECKO, Kasalis,
+                                  Moose/Scorpion, etc.)
+                                - Old Files/ejemplos/ (carpeta vieja, ya
+                                  archivada desde antes)
+                                - Old Files/moc_2406/ (todo el MOC 2406:
+                                  MRA/RA/Placard/Declaración de las 7
+                                  estaciones Infurrow/ELK/Kasalis)
+                              IMPORTANTE: si el usuario pide "el MRA de
+                              Gecko" o similar sin especificar carpeta,
+                              buscarlo aquí primero (Old Files/documentos_
+                              terminados/), ya NO en documentos_terminados/
+                              directo en el root (esa carpeta ya no existe
+                              suelta en el root).
+- Revalidacion Moose Scorpion Gecko/ -> carpeta NUEVA (vacía al crearse,
+                              29-sep-2026) para el trabajo de revalidación
+                              en curso de esta familia de 16 estaciones
+                              (Moose + Scorpion + Gecko, ver sección 7A/12b/
+                              12c) -- ahí va lo nuevo que se genere para
+                              esta revalidación específica en vez de mezclarlo
+                              con Old Files/.
 
 -----------------------------------------------------------------------------
 3. FLUJO DE GIT (IMPORTANTE)
