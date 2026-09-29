@@ -402,6 +402,90 @@ igual entre manuales de la misma familia de producto (estaciones de
 atornillado).
 
 -----------------------------------------------------------------------------
+12b. RA_Moose_Scorpion.xlsx (documentos_terminados/) -- formato de RA REAL
+     distinto al de RA_Generador.html
+-----------------------------------------------------------------------------
+El usuario subió un PDF escaneado (RA_SCORPION.pdf, 6 páginas, cada página
+en landscape rotada 90°) con el RA REAL de la familia "Estaciones de
+atornillado e inspección manual" (sección 7A de este archivo:
+JA100924-03/06/07, MS-550-03/04/05/06/07). Es un formato de tabla PLANA
+totalmente distinto al RA_Generador.html/RA_Form que se usa en el resto del
+repo -- doc real: "16-HS80-8000-00020 Rev A / 16-HS20-8000-00033" (OJO: ese
+mismo número 16-HS80-8000-00020 aparece en Documentacion_Maquinas/
+Inventario (1).xlsx como el campo "MachineRiskAssesment" -- es decir la
+plantilla real de este documento se llama internamente "MRA" en el
+inventario aunque su contenido es un Risk Assessment; no hay xlsx editable
+de esta plantilla en plantillas/, solo el PDF escaneado que mandó el
+usuario). NO usar MRA_Generador.html ni RA_Generador.html para esto -- se
+construyó desde cero con openpyxl (build_ra_moose_scorpion.py, ver
+historial de sesión) replicando la tabla tal cual, sin plantilla base.
+
+Cómo leer PDFs escaneados landscape-rotados en este entorno: `pdftoppm`
+(poppler-utils) NO viene preinstalado -- hay que `apt-get install -y
+poppler-utils` primero (puede fallar el mirror de security.ubuntu.com en
+el primer intento, correr `apt-get update` antes). Cada página del PDF
+está guardada apaisada (612x792 pero el contenido real es landscape
+rotado), extraer con `pdftoppm -r 300 -png archivo.pdf page` y luego
+rotar CADA imagen con PIL `im.rotate(90, expand=True)` (NO -90, esa queda
+al revés/espejo) antes de leerla con el tool de lectura de imágenes.
+
+Estructura real de la tabla (21 columnas, confirmada leyendo las 6
+páginas del PDF): Evaluación#, Env o H&S, Nombre/tipo de máquina,
+Ubicación/Departamento/Propietario, Fabricante de la máquina/Descripción/
+Modelo/Número de serie, Peligro/Aspecto, Consecuencias/Impacto, Uso de la
+máquina (#turno por semana, horas/min), Condición en la que se evalúa el
+riesgo, [Gravedad de la lesión/Exposición al peligro/Evitación del
+peligro/RS] ANTES de controles, Control(es) adicional(es) implementado(s),
+[mismas 4 columnas] DESPUÉS de controles, ¿Controles incluidos en la orden
+de trabajo/sistema de mantenimiento preventivo?, Identificador de sistema
+WO/PM, Controles verificados por (nombre).
+
+Las 6 "Estaciones" de ejemplo del PDF (todas John Deere Scorpion, otra
+sub-familia distinta a la de este repo pero mismo tipo de proceso) tienen
+2 variantes de contenido:
+- Patrón COMPLETO (16 filas, estaciones 1/4/5/6 del PDF -- las que tienen
+  atornillador real): Poka Yoke, Scanner x2, Partes Fijas (Fixtura) x2,
+  Partes Moviles (Atornillador) x3, Conexiones Eléctricas x2, Partes
+  Neumáticas (Pistones) x2, Mantenimiento eléctrico, Mantenimiento
+  Neumático, Mantenimiento a Atornillador x2.
+- Patrón CORTO (10 filas, estaciones 2/3 del PDF -- "Active Alignment" y
+  "Front Window Assembly", sin atornillador ni partes neumáticas): Poka
+  Yoke, Cámara, Partes Fijas (Fixtura) x2, Partes Moviles (Pistones o
+  Dispensador) x3, Conexiones Eléctricas x2, Mantenimiento eléctrico,
+  Mantenimiento Neumático.
+Se usó el patrón COMPLETO (16 filas) para las 8 estaciones de
+RA_Moose_Scorpion.xlsx porque las 8 son "Manual Screwdriving Station" con
+atornillador real (confirmado en Inventario, StandardApplication =
+"Manual Screwdriving Station" para las 8) -- replicando el contenido
+EXACTO del PDF (mismos peligros/consecuencias/S-E-A/RS/controles/WO,
+tal cual pidió el usuario), solo cambiando nombre de estación/serial/
+ubicación por fila de encabezado de cada bloque.
+
+Nombres reales de las 8 estaciones (cruzados con Documentacion_Maquinas/
+Inventario (1).xlsx por SerialNumber, columna Description):
+  JA100924-03 -> Front Assy Scorpion    (Línea 202, Clean Room ISO 7, DISA)
+  JA100924-06 -> Final Assy Scorpion    (Línea 202, Clean Room ISO 7, DISA)
+  JA100924-07 -> Dogbone Scorpion       (Línea 211, Back End, DISA)
+  MS-550-03   -> Lens Adapter Moose/Scorpion (Línea 202, Clean Room ISO 7, ITO)
+  MS-550-04   -> Front Assy Moose       (Línea 202, Clean Room ISO 7, ITO)
+  MS-550-05   -> Back Assy Moose/Scorpion    (Línea 202, Clean Room ISO 7, ITO)
+  MS-550-06   -> Final Assy Moose       (Línea 202, Clean Room ISO 7, ITO)
+  MS-550-07   -> Brackets Assy Moose    (Línea 202, Clean Room ISO 7, ITO)
+IMPORTANTE: esta familia (documentada en sección 7A) es la misma que el
+"Hallazgo General" del Maestro_Maquinas identificó como realmente 8
+estaciones físicamente distintas (no un solo tipo uniforme como se asumió
+al principio) -- este RA_Moose_Scorpion.xlsx es la primera vez que se
+documentan formalmente como 8 entradas separadas con su nombre/serial real
+en vez de tratarlas como una sola familia genérica.
+PENDIENTE: no se confirmó con el usuario cuáles de las 8 SÍ tienen pistón
+neumático de bloqueo (la sección 7A dice "la mitad tiene, la mitad no" sin
+especificar cuáles) -- se aplicó el patrón completo con Partes Neumáticas
+a las 8 por igual, replicando fielmente el PDF de ejemplo. Si el usuario
+confirma que alguna(s) NO tienen pistón, quitar las filas 10/11 (Partes
+Neumáticas) y 13 (Mantenimiento Neumático) de esa(s) estación(es)
+específica(s).
+
+-----------------------------------------------------------------------------
 12. MOC 2406 (moc_2406/) -- estaciones sin MRA/RA/Placard/Declaración
 -----------------------------------------------------------------------------
 El usuario subió 5 hojas de cálculo reales a Documentacion_Maquinas/
