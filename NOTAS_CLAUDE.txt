@@ -846,3 +846,108 @@ PENDIENTE:
   DECLARACION_SEGURIDAD_*.xlsx) quedaron en el repo tal cual se generaron
   antes pero pueden estar DESACTUALIZADOS/no ser la versión final; no
   tocarlos a menos que el usuario pida explícitamente una actualización.
+
+-----------------------------------------------------------------------------
+13. REVALIDACIÓN 2026: 2 revalidaciones EHS simultáneas en curso
+-----------------------------------------------------------------------------
+El usuario está corriendo 2 revalidaciones EHS en paralelo, cada una con
+TODOS los documentos de seguridad (MRA, RA, Placard, Declaración, 5 Steps
+LOTO, Manual/Formato de Mantenimiento, Estudio Ergonómico):
+- "REVALIDACION INFURROW ELK KASALIS/" -> las 7 estaciones que nunca
+  tuvieron MOC (Lens Adapter ELK, Front Assy ELK, Final Assy ELK, Housing
+  Attach Infurrow/ST4, Camera Attach Infurrow/ST6, Kasalis Scorpion/ELK) --
+  por eso primero se les creó el MOC (ver sección 12, MOC 2406) y ahora se
+  hace la validación completa con todos los documentos.
+- "Revalidacion Moose Scorpion Gecko/" -> las 16 estaciones que SÍ ya
+  tenían MOC propio (ver sección 7A/12b/12c), con subcarpetas por tipo de
+  documento: Declaraciones Seguridad/, Estudios Ergonomicos/, Five Steps
+  Loto/, Formatos Mantenimiento/, Placard Loto/ (los MRA/RA van sueltos en
+  la raíz de esa carpeta, ya subió el usuario ahí MOC4163 SCORPION.pdf,
+  MOC4645.pdf, MOC4851 MOOSE.pdf, MOC 5164.pdf, MRA_GECKO.xlsx,
+  MRA_Moose_Scorpion.xlsx, RA_GECKO.xlsx, RA_Moose_Scorpion.xlsx,
+  Manual_GECKO_ITO.docx, Manual_STTOR_ITO.docx como punto de partida).
+Los archivos viejos (documentos_terminados/, ejemplos/, moc_2406/) se
+movieron a "Old Files/" (ver sección 2) -- ya NO se debe seguir escribiendo
+ahí, los nuevos entregables de la revalidación van en estas 2 carpetas
+nuevas según corresponda la estación.
+
+FEEDBACK REAL DE EHS sobre los primeros RA entregados (aplica a TODOS los
+RA de ambas revalidaciones, no solo a uno):
+1. Cada TAREA debe desglosarse en sus PASOS físicos reales, y cada PASO
+   individual debe tener su propia fila de análisis de riesgo (con su
+   propio tipo de peligro/riesgo/consecuencia) -- NO un solo riesgo
+   genérico por actividad completa. Cita textual: "Los RA019 deben
+   describir la operación que realiza el operador, no tenemos solo 1
+   riesgo por cada actividad."
+2. Los controles deben describirse completos: administrativos (SOP,
+   capacitación), de ingeniería (tipo de sensor/guarda específico), Y el
+   uso de LOTO -- no un solo control genérico de una palabra.
+3. El EPP SÍ debe declararse en todas las filas (antes se ponía "No se
+   requiere EPP adicional" -- INCORRECTO porque estas estaciones están en
+   Cuarto Limpio ISO 7, que exige EPP de cleanroom siempre: bata/cofia,
+   guantes de nitrilo, lentes de seguridad, calzado antiestático ESD, más
+   EPP adicional específico por riesgo (dieléctrico para eléctrico, etc).
+4. El campo "Documentos donde se estandarizan los controles" debe incluir
+   el número de AYUDA VISUAL, no solo el nombre genérico del SOP. NOTA: no
+   existe un número de ayuda visual real capturado para las estaciones de
+   ELK/Infurrow en ninguna fuente (Inventario, Maestro_Maquinas todas
+   "No encontrado") -- se dejó explícito "pendiente de asignar/confirmar"
+   en vez de inventar un número. SÍ existen los números reales de "5 Steps
+   LOTO" por estación en Documentacion_Maquinas/Inventario (1).xlsx
+   columna FiveLoToSteps (Lens Adapter ELK=16-HS00-8018-00544, Front Assy
+   ELK=16-HS00-8018-00545, Final Assy ELK=16-HS00-8018-00546, Housing
+   Attach Infurrow/ST4=16-HS00-8018-00547, Camera Attach Infurrow/ST6=
+   16-HS00-8018-00548) -- usar esos como documento real cuando aplique.
+5. Revisar que el "nivel de control" elegido corresponda al tipo de
+   control real descrito, para que el RR sí refleje una reducción -- ver
+   punto técnico abajo, el problema NO era la fórmula.
+6. Agregar el apartado de "Arranque" (startup) y "Emergencia" -- el RA_
+   Generador.html SÍ tiene una opción de condición "Emergencia " (con
+   espacio al final, ojo) en LISTS.condicion (["Rutinario","No rutinario",
+   "Emergencia ","Psicosocial"]) -- no existe opción "Arranque" en el
+   dropdown, así que el arranque se modela como tarea bajo condición
+   "No rutinario".
+7. (Nota aparte, sobre MRA no RA) "Revisar las fórmulas de la ISO
+   13849-1:2023, ya que aparecen como N/A" -- esto es sobre el MRA
+   (Machine Risk Assessment, hoja "MRA Full Assessment"/ISO 13849), NO
+   sobre el RA. Pendiente de revisar cuando se toque el MRA de estas
+   revalidaciones.
+8. "Los controles propuestos si aparece aceptable, no se tiene necesidad
+   de volver a agregar otro" -- si el resultado ya cae en categoría
+   ACEPTABLE/DESPRECIABLE con los controles actuales, no hace falta
+   inventar controles adicionales solo por agregar.
+
+PUNTO TÉCNICO IMPORTANTE (para no perder tiempo re-investigando esto):
+el RI/RR/%Reducción en los RA generados por RA_Generador.html SÍ son
+fórmulas reales de Excel (confirmado abriendo el .xlsx con openpyxl
+data_only=False: J8='=H8*I8', P8='=IF(O8=5,(J8*1),IF(O8=4,(J8*0.85),
+IF(O8=3,(J8*0.15),...)))', Q8='=IF(J8=0,0,(P8-J8)/J8)') y el workbook
+tiene <calcPr fullCalcOnLoad="1"/> -- SÍ recalculan solas al abrir en
+Excel real. Si openpyxl con data_only=True muestra 0 en esas columnas,
+es SOLO porque el valor cacheado en el XML nunca se recalculó (el archivo
+se generó sin abrir Excel) -- NO es un bug del RA_Generador ni hay que
+"arreglar la fórmula". El problema real que vio EHS es de CONTENIDO: el
+nivelControl elegido (administrativo=4, 85% del riesgo original) no
+refleja bien un control que en realidad es de ingeniería (nivelControl=3,
+solo 15% del riesgo original, mayor reducción) -- hay que elegir el
+nivelControl correcto según el control real descrito, no dejarlo en
+automático/genérico.
+
+RA_InfurrowElk.xlsx (dentro de REVALIDACION INFURROW ELK KASALIS/) YA SE
+CORRIGIÓ con estos 8 puntos (17 filas: 4 pasos de carga/atornillado, 1
+verificación con escáner/cámara, 1 abastecimiento de material, 2 pasos de
+arranque, 2 filas de emergencia/reinicio, 4 pasos de mantenimiento
+eléctrico, 2 pasos de mantenimiento neumático en fixturas, 1 mantenimiento
+en punto de entrada de aire). Script reutilizable:
+scratchpad/ra_infurrowelk_v2/fill_ra_infurrowelk_v2.js -- mismo patrón de
+siempre (Playwright + RA_Generador.html + validación contra LISTS en
+vivo), con 3 constantes de EPP reutilizables (EPP_CLEANROOM, EPP_ELEC,
+EPP_NEUM) para no repetir el texto largo en cada fila.
+
+PENDIENTE: aplicar el mismo tratamiento (desglose de pasos + EPP cleanroom
++ controles completos + ayuda visual + arranque/emergencia) a:
+- RA de Kasalis (dentro de REVALIDACION INFURROW ELK KASALIS/)
+- RA_Gecko y RA_Moose_Scorpion (dentro de Revalidacion Moose Scorpion
+  Gecko/) -- el usuario mencionó explícitamente estos 2 en el feedback.
+- Cuando se llegue al MRA de cualquiera de las 2 revalidaciones, revisar
+  el punto 7 (fórmulas ISO 13849-1:2023 aparecen N/A).
