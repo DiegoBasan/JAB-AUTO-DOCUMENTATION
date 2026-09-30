@@ -951,3 +951,70 @@ PENDIENTE: aplicar el mismo tratamiento (desglose de pasos + EPP cleanroom
   Gecko/) -- el usuario mencionó explícitamente estos 2 en el feedback.
 - Cuando se llegue al MRA de cualquiera de las 2 revalidaciones, revisar
   el punto 7 (fórmulas ISO 13849-1:2023 aparecen N/A).
+
+-----------------------------------------------------------------------------
+14. NÚMEROS DE AYUDA VISUAL REALES (Moose/Scorpion + GECKO) -- fuente: imagen
+    que mandó el usuario, carpeta de ayudas visuales (16-AT40-3318-000XX)
+-----------------------------------------------------------------------------
+El usuario pidió que en RA_Moose_Scorpion.xlsx y RA_GECKO.xlsx (dentro de
+Revalidacion Moose Scorpion Gecko/) el campo "Documentos donde se
+estandarizan los controles" lleve SOLO el número de documento de la ayuda
+visual (sin texto descriptivo, sin nombre de archivo) -- ej. si el PDF se
+llama "16-AT40-3318-00008 AV Front Assy Scorpion.pdf", en el RA va
+literalmente "16-AT40-3318-00008". Como el RA es UN solo archivo
+consolidado por familia (no per-estación), se listaron TODOS los números
+de la familia juntos (uno por línea) en cada fila del RA, en vez de
+intentar mapear fila-a-estación (el RA no está estructurado por estación).
+
+Números reales (Moose/Scorpion, 8 estaciones, 7 confirmados + 1 pendiente):
+  Front Assy Scorpion (JA100924-03)          -> 16-AT40-3318-00008
+  Back Assy Moose/Scorpion (MS-550-05)       -> 16-AT40-3318-00009
+  Final Assy Scorpion (JA100924-06)          -> 16-AT40-3318-00010
+  Dogbone Scorpion (JA100924-07)             -> 16-AT40-3318-00011
+  Lens Adapter Moose/Scorpion (MS-550-03)    -> 16-AT40-3318-00021
+  Final Assy Moose (MS-550-06)               -> 16-AT40-3318-00024
+  Brackets Assy Moose (MS-550-07)            -> 16-AT40-3318-00025 (el
+    número en la captura salía como "6-AT40-3318-00025", sin el "1" inicial
+    -- se asumió recorte de pantalla, ya que TODOS los demás documentos de
+    esta serie empiezan con "16-AT40-3318-", confirmar si es posible)
+  Front Assy Moose (MS-550-04)               -> PENDIENTE: en la captura el
+    nombre del archivo salía cortado como "16-AT40-3318 AV Front Assy
+    Moose.pdf" sin los 2 últimos dígitos visibles -- pedir al usuario el
+    número completo cuando lo tenga a la mano.
+
+Números reales (GECKO, 8 estaciones, las 8 confirmadas):
+  Lens Adapter Gecko (VSS1H-6050-001)             -> 16-AT40-3318-00013
+  Ampseal Attach Gecko (VSS1H-6050-002)           -> 16-AT40-3318-00014
+  Bottom Attach Gecko (VSS1H-6050-003)            -> 16-AT40-3318-00015
+    (en la captura el nombre decía "Botton Assy Gecko.pdf", typo del
+    usuario por "Bottom")
+  Leds Attach Gecko (VSS1H-6050-004)              -> 16-AT40-3318-00016
+    (captura decía "Led Assy Gecko.pdf")
+  Moisture Absorber Attach Gecko (VSS1H-6050-005) -> 16-AT40-3318-00017
+  Final Assy Gecko (VSS1H-6050-006)               -> 16-AT40-3318-00018
+  Cartridge Attach Gecko (MS-550-001)             -> 16-AT40-3318-00019
+    (captura decía "Cartridge Gecko.pdf")
+  Gasket Attach Gecko (MS-550-002)                -> 16-AT40-3318-00020
+
+Ambos RA (RA_Moose_Scorpion.xlsx 20 filas, RA_GECKO.xlsx 20 filas) se
+reconstruyeron con el MISMO tratamiento aplicado a RA_InfurrowElk.xlsx
+(sección 13): pasos desglosados por tarea, controles completos
+(administrativo + ingeniería + LOTO), EPP de cleanroom declarado en TODAS
+las filas, apartados de Arranque y Emergencia, y nivelControl coherente
+con el tipo de control real. Scripts reutilizables en
+scratchpad/ra_revalidacion2/fill_ra_moose_scorpion_v2.js y
+fill_ra_gecko_v2.js.
+
+LÍMITE TÉCNICO DE RA_Generador.html: MAX_RISKS = 20 filas por documento
+(la plantilla trae las filas 8-27 ya preparadas con fórmulas, no más) --
+si se arma una lista de riesgos con más de 20 entradas, el botón #btnGenerar
+lanza error "La plantilla soporta máximo 20 riesgos por documento" y el
+evento 'download' nunca se dispara (Playwright truena con timeout
+esperando la descarga) -- contar SIEMPRE el array de riesgos antes de
+correr el script; si excede 20, consolidar/fusionar pasos en vez de
+generar y descubrir el error después.
+
+PENDIENTE: confirmar con el usuario el número completo de AV de Front Assy
+Moose, y si el de Brackets Assy Moose de verdad empieza con "16-" (no
+"6-"). Actualizar el documento DOC_AV en ambos scripts y regenerar
+RA_Moose_Scorpion.xlsx cuando se tenga la confirmación.
