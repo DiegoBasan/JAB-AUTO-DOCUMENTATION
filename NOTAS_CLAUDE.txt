@@ -1018,3 +1018,103 @@ PENDIENTE: confirmar con el usuario el número completo de AV de Front Assy
 Moose, y si el de Brackets Assy Moose de verdad empieza con "16-" (no
 "6-"). Actualizar el documento DOC_AV en ambos scripts y regenerar
 RA_Moose_Scorpion.xlsx cuando se tenga la confirmación.
+
+-----------------------------------------------------------------------------
+15. RA_Generador.html: cómo superar el límite de 20 filas (MAX_RISKS) --
+    técnica de extensión de hoja real, reutilizable para cualquier RA futuro
+-----------------------------------------------------------------------------
+El usuario pidió explícitamente RA "larguísimos" (desglosar CADA componente
+de mantenimiento en su propia fila -- "cambio de motor" y "cambio de eje"
+van en líneas separadas, no juntas) -- eso rebasa por mucho el límite
+MAX_RISKS=20 que trae el botón #btnGenerar del HTML (rechaza con error
+"La plantilla soporta máximo 20 riesgos por documento" y nunca dispara el
+evento 'download'). Investigando la plantilla embebida (TEMPLATE_B64) se
+confirmó que SÍ se puede extender de forma segura más allá de la fila 27:
+
+- La hoja "RA Form" = xl/worksheets/sheet1.xml. Las fórmulas de las
+  columnas J (RI=H*I), P (RR según nivelControl) y Q (%Reducción) son
+  "shared formulas" de Excel: la fila 9 es la FILA MAESTRA de cada grupo
+  (si="3" para J, si="4" para P, si="5" para Q) con
+  ref="J9:J27"/"P9:P27"/"Q9:Q27" y el texto real de la fórmula; las filas
+  10-27 son "seguidoras" que solo dicen <f t="shared" si="3"/> sin
+  repetir el texto (Excel calcula la referencia relativa solo). La fila 8
+  es un caso aparte con su propio grupo de fórmulas (si=0,1,2, sin
+  relación con las demás).
+- Para agregar filas 28+: (1) ampliar el atributo `ref` de la fila 9
+  maestra de "J9:J27" a "J9:J{max}" (igual P y Q), (2) insertar nuevas
+  filas <row r="28">...</row> etc. con celdas SEGUIDORAS
+  `<c r="J28" s="51"><f t="shared" si="3"/><v>0</v></c>` (mismo patrón
+  para P/Q con si="4"/si="5" y s="61"/s="60"), y las demás columnas
+  (A,B,C,D,E,F,G,H,I,K,L,M,N,O,R,S) como celdas vacías con el MISMO
+  índice de estilo `s="..."` que usa la fila 27 (A=55,B=55,C=56,D=56,
+  E=49,F=49,G=56,H=57,I=57,K=107,L=58,M=58,N=57,O=49,R=57,S=57).
+  IMPORTANTE: la plantilla original trae una fila 28 residual con una
+  sola celda K28 con texto basura ("bu", un leftover sin sentido) -- hay
+  que ELIMINAR esa fila 28 vieja antes de insertar las filas nuevas, para
+  no dejar una fila 28 duplicada/corrupta.
+- El formato condicional de colores (verde/amarillo/naranja/rojo del RI y
+  RR) está en 3 bloques `<conditionalFormatting sqref="J8:J27 ...">` /
+  `"J8:J27"` / `"P8:P27"` -- hay que reemplazar "27" por el nuevo último
+  renglón en los 3, si no las filas nuevas no muestran color.
+- La validación de datos de Severidad/Probabilidad (lista 1-5) tiene
+  sqref="H8:I27" -- extender igual (cosmético, no afecta que los valores
+  ya escritos funcionen, pero mejor dejarlo consistente). Las validaciones
+  de Categoría (D), Control-Influencia (G) y Orden de Trabajo (M/R) YA
+  estaban preparadas de fábrica con rango abierto (D8:D27 + D28:D500,
+  G28:G1048576, M28:M1048576 R28:R1048576) -- no hace falta tocarlas.
+- Los colores de RI/RR (columnas J y P) por rango de valor, confirmados
+  en xl/styles.xml (dxfs): 0-3.99=VERDE (FF92D050, dxfId 11),
+  4-9.99=AMARILLO/beige (FFF2EBB4, dxfId 12), 10-16.99=NARANJA
+  (FFFFC000, dxfId 13), 17-25=ROJO (FFC00000, dxfId 14).
+  nivelControl -> factor de reducción sobre RI: 1(Eliminación)≈0,
+  2(Sustitución)=0.05, 3(Ingeniería)=0.15, 4(Administrativo)=0.85,
+  5(Solo EPP)=1.0. Para que el RR caiga en VERDE, RI*factor debe ser <4 --
+  con nivelControl=3 (controles de ingeniería reales: resguardos, LOTO,
+  sensores, válvulas de alivio) esto se cumple casi siempre salvo RI muy
+  alto (>26); con nivelControl=4 (solo administrativo) hay que mantener
+  RI<=4 (ej. S2×P2) para seguir en verde. El usuario pidió explícitamente
+  que el RR quede en verde en todas las filas ("ocupa ser menos hasta que
+  el RR sea verde, ya que eso era antes, ahora con los controles es
+  menos") -- SIEMPRE revisar el color resultante antes de entregar
+  (fórmula: RI=S×P, RR=RI×factor(nivelControl), ver tabla de arriba).
+
+Herramienta Python reutilizable: scratchpad/ra_v3/ra_builder.py, función
+`build_ra(html_path, out_path, proceso, fecha, risks)` -- toma la
+plantilla directo de TEMPLATE_B64 (sin pasar por Playwright/JS en
+absoluto para la escritura, solo para VALIDAR de antemano los combos
+categoria/riesgo/consecuencia/control contra las listas en vivo del
+RA_Generador.html, que es donde sí hace falta el navegador), extiende la
+hoja tantas filas como haga falta y escribe todo el contenido. Esto es el
+método preferido de ahora en adelante para CUALQUIER RA con más de 20
+riesgos -- ya no usar el patrón antiguo (Playwright + click #btnGenerar)
+cuando se anticipe que la lista de riesgos va a pasar de 20.
+
+RA_GECKO.xlsx (39 filas) y RA_Moose_Scorpion.xlsx (28 filas), ambos en
+Revalidacion Moose Scorpion Gecko/, se reconstruyeron con esta técnica,
+desglosando el mantenimiento mecánico en una fila POR COMPONENTE (motor
+eje X, eje Y, eje Z, motor del slider, riel lineal, correa, acoplamiento,
+cadena portacables, encoder, cabezal de atornillado, feeder, boquilla de
+vacío, sensores de límite, cámara de visión, iluminación LED -- GECKO;
+motor del atornillador, broca/bit, fixtura, sensor Poka Yoke, escáner,
+cable de alimentación -- Moose/Scorpion), más mantenimiento eléctrico
+desglosado (driver, PLC/I-O, fuente de alimentación, cableado), mantenimiento
+neumático, uso de herramientas manuales y aire comprimido (categoría
+"Herramientas" del catálogo, con riesgos "Herramientas manuales" y
+"Partículas expulsadas"), y ruido/vibración del equipo en operación
+(categoría "Mecanico", riesgos "Ruido"/"Vibración"). TODAS las filas caen
+en verde (confirmado programáticamente, ver script build_gecko.py /
+build_moose_scorpion.py que imprimen "filas no verdes: 0").
+
+ACTUALIZACIÓN del texto de EPP de cuarto limpio (pedido explícito del
+usuario, reemplaza el texto anterior en TODOS los RA de ambas
+revalidaciones de ahora en adelante):
+  ANTES: "Bata/gorro de cuarto limpio (cleanroom), guantes de nitrilo,
+  lentes de seguridad y calzado antiestático (ESD), conforme al ingreso a
+  Cuarto Limpio ISO 7."
+  AHORA: "Traje de cuarto limpio, cofia, guantes de nitrilo, cubrebocas,
+  lentes de seguridad y calzado antiestático (ESD), conforme al ingreso a
+  Cuarto Limpio ISO 7."
+Pendiente: aplicar este mismo texto de EPP actualizado a RA_InfurrowElk.xlsx
+si el usuario lo pide (no se tocó esta vez porque él ya lo había corregido
+manualmente y el pedido explícito fue solo para "ambos" = Moose_Scorpion y
+GECKO).
