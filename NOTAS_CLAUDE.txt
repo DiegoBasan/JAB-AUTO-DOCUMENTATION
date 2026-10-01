@@ -1191,3 +1191,61 @@ Maquina Segura/", uno por estación, nombrados
 limpios, 13 imágenes cada uno (5 originales de la plantilla + 8 nuevas
 agregadas), celdas de encabezado (ambos bloques) confirmadas con el
 nombre/serial/maintenance name correctos por estación.
+
+-----------------------------------------------------------------------------
+17. PDF de Validación de Máquina Segura -- herramienta real encontrada para
+    convertir xlsx a PDF en este entorno (LibreOffice sigue roto)
+-----------------------------------------------------------------------------
+Se reconfirmó que `soffice --headless --convert-to pdf` SIGUE roto en este
+entorno (falla con "Error: source file could not be loaded" incluso en un
+.txt trivial, probado de nuevo con perfiles limpios) -- no perder tiempo
+reintentando eso.
+
+SOLUCIÓN ENCONTRADA ESTA SESIÓN: `apt-get install -y gnumeric` instala
+`ssconvert`, que SÍ funciona para convertir .xlsx a PDF en este entorno.
+Comando: `ssconvert --export-type=Gnumeric_pdf:pdf_assistant archivo.xlsx
+salida.pdf`. Imprime bastantes warnings tipo "Unexpected element
+'a:extLst'..." a stderr (ruido de elementos OOXML modernos que Gnumeric no
+reconoce, ignorar, no son fatales) y a veces "CRITICAL
+gnm_style_conditions_eval: assertion 'sc != NULL' failed" (también
+inofensivo, el PDF se genera bien de todas formas) -- SIEMPRE verificar
+con `pdfinfo salida.pdf` que el PDF se generó con Pages>0 y tamaño de
+archivo razonable, no solo el exit code.
+
+La plantilla "Validación de Máquina Segura" trae de fábrica una
+configuración de impresión ortograph a 21% de escala en portrait que la
+comprime TODA en pocas páginas pero ILEGIBLE (texto microscópico). El
+usuario pidió explícitamente aprovechar el ancho completo sin perder
+claridad -- la solución fue, antes de convertir, cambiar en cada hoja
+("Check List EHS" y "Check List SME", openpyxl `ws.page_setup`):
+  orientation='landscape', fitToWidth=1, fitToHeight=0 (deja fluir la
+  altura en tantas páginas como haga falta en vez de forzar un número fijo
+  de páginas de alto), scale=None (para que fitToWidth/fitToHeight manden
+  en vez del scale fijo del 21%), paperSize=PAPERSIZE_LETTER, y
+  `ws.sheet_properties.pageSetUpPr.fitToPage = True` (si no, Excel/los
+  visores ignoran fitToWidth/fitToHeight y usan el scale viejo). Resultado:
+  cada checklist (EHS ~8 páginas, SME ~20 páginas con fotos y firmas,
+  ~28 páginas totales por estación) se ve a tamaño de letra normal,
+  ancho completo aprovechado, con las fotos de B71/B91 renderizando
+  correctamente dentro del PDF.
+
+La hoja "Check List EHS fixtura estacion" (3ra hoja, nunca pedida por el
+usuario) se excluye del PDF: se hace una copia temporal del workbook con
+openpyxl, se borra esa hoja (`del wb['Check List EHS fixtura estacion']`),
+se guarda a un xlsx temporal, y SOLO ESE temporal se manda a ssconvert --
+el .xlsx real que se entrega al usuario conserva las 3 hojas intactas
+(el recorte de hoja es solo para el PDF).
+
+Las config de landscape/fitToWidth SÍ se guardaron también en los .xlsx
+reales entregados (no solo en el temporal del PDF) -- mejora la
+experiencia si el usuario los abre e imprime directo desde Excel.
+
+Convención de nombres (pedida por el usuario, aplica de ahora en
+adelante para esta familia de documentos): prefijo "MS_" + nombre de
+estación, para AMBOS el .xlsx y el .pdf -- ej. "MS_Front_Assy_Scorpion.xlsx"
+/ "MS_Front_Assy_Scorpion.pdf". Ya NO se usa el prefijo
+"Validacion_Maquina_Segura_" (se renombraron los 16 archivos existentes).
+
+Script reutilizable: scratchpad/validacion_pdf/rename_and_pdf.py --
+automatiza todo el flujo (landscape + quitar hoja3 + ssconvert + renombrar)
+para cualquier lote futuro de archivos "Validacion Maquina Segura".
