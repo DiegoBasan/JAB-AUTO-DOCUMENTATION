@@ -1118,3 +1118,76 @@ Pendiente: aplicar este mismo texto de EPP actualizado a RA_InfurrowElk.xlsx
 si el usuario lo pide (no se tocó esta vez porque él ya lo había corregido
 manualmente y el pedido explícito fue solo para "ambos" = Moose_Scorpion y
 GECKO).
+
+-----------------------------------------------------------------------------
+16. Validación de Máquina Segura (16-HS80-8000-00010-I) -- x16 estaciones
+    Moose/Scorpion/Gecko
+-----------------------------------------------------------------------------
+Plantilla real subida por el usuario a plantillas/, formato que llena EHS
+para validar cada máquina. 3 hojas: "Check List EHS", "Check List SME"
+(ambas con el mismo encabezado a llenar), "Check List EHS fixtura
+estacion" (no se tocó, no se pidió).
+
+Mapeo de celdas confirmado vía merged_cells (celda top-left de cada rango
+combinado = la celda "de valor" contigua a su etiqueta):
+  E4=nombre estación, E5=Proyecto ("John Deere / 202" fijo), Q4=Serial
+  Number, Q5=nombre estación (repetido), Q6=fabricante ("ITO-GROUP" fijo
+  para todas), Q7=MaintenanceName, Q10=revisado por SME ("Marco Reza"
+  fijo), Q11=revisado por EHS ("Luis Arellano" fijo), Q12=responsable del
+  equipo ("Javier Villagran" fijo). Igual en ambas hojas EHS y SME.
+  La hoja SME tiene un SEGUNDO bloque de este mismo encabezado repetido
+  más abajo (alrededor de la fila 61, columnas desplazadas +1 letra):
+  F61=E4, F62=E5, R61=Q4, R62=Q5, R63=Q6, R64=Q7, R67=Q10, R68=Q11,
+  R69=Q12 -- mismos valores, hay que llenar las 2 veces.
+
+Dos áreas de fotos en la hoja SME (celdas combinadas grandes, NO en EHS):
+  B71:U90 -- "Agregue archivo fotografico de las secciones 5, 6 y 7
+  (Fotografia de la(s) guarda(s) revisadas)": el usuario pidió ahí fotos
+  de guardas + paro de emergencia + cortina de seguridad + switch LOTO +
+  válvula LOTO (4 fotos, grid 2x2).
+  B91:U106 -- "Agregue archivo fotografico de las secciones 8 a 15
+  (Fotografia de lo(s) interlock(s), cortina(s), sensore(s) revisados)":
+  igual 4 fotos pero de interlocks/cortinas/sensores de presencia
+  (distinto foco que el bloque anterior aunque reutiliza alguna foto en
+  común como la cortina).
+
+Técnica de inserción de fotos en celda combinada grande: usar
+`OneCellAnchor` + `AnchorMarker(col=<col0idx>, row=<row0idx>)` +
+`XDRPositiveSize2D` (todo de openpyxl.drawing) en vez de la forma simple
+`ws.add_image(img, "B71")` -- así se pueden poner VARIAS fotos dentro de
+la MISMA celda combinada en una cuadrícula (2x2), cada una en su propio
+offset de columna/fila, en vez de que todas se apilen en el mismo punto.
+columnas 0-indexed (A=0,B=1,...,L=11), filas 0-indexed (fila71 real =
+row_idx 70). Función reutilizable `add_photo_grid()` en
+scratchpad/validacion_maquina/build_validacion.py.
+
+Verificado que openpyxl SÍ puede abrir+guardar este archivo sin pérdidas
+de contenido relevantes (a diferencia del .xlsm de ergonomía) -- la única
+diferencia detectada en namelists del zip es que se pierden los 3
+xl/printerSettings/*.bin (configuración de impresora, cosmético, no
+afecta datos) y sharedStrings.xml se reescribe como inline strings
+(equivalente). No tiene macros, ni data validations, ni comentarios que
+perder -- por eso aquí SÍ se usó openpyxl normal (load+edit+save) en vez
+del patrón de cirugía de zip/XML crudo.
+
+Fotos usadas por familia (reutilizando lo ya disponible en imagenes/,
+mismo criterio de familias ya establecido: STTOR=Moose/Scorpion,
+GECKO/STGECKO=Gecko):
+  STTOR guardas (B71): MASCARA CERRADA, BOTONES Y PARO DE EMERGENCIA,
+    CORTINAS DE ESE PISTON, SWITCH PRINCIPAL Y SISTEMA FRL (switch+válvula
+    juntos en una foto).
+  STTOR interlocks (B91): CORTINAS DE ESE PISTON, PISTON DONDE LO TAPA LA
+    MASCARA, PISTON DEL CORTADOR QUE OCUPA CORTINAS, PISTON CON MASCARA
+    CERRADA.
+  GECKO guardas (B71): FEEDER TORNILLOS CON GUARDA, STGECKO PARO
+    EMERGENCIA & BOTONES DE ACCION, CORTINAS DE SEGURIDAD, POWER SWITCH.
+  GECKO interlocks (B91): CORTINAS DE SEGURIDAD, SWICTH AUTO MANTO
+    (switch de llave auto/mantenimiento = interlock de modo), ROBOT
+    GANTRY, SLIDER.
+
+Entregado: 16 archivos en "Revalidacion Moose Scorpion Gecko/Validacion
+Maquina Segura/", uno por estación, nombrados
+"Validacion_Maquina_Segura_<Nombre_Estacion>.xlsx". Validados: zip/xml
+limpios, 13 imágenes cada uno (5 originales de la plantilla + 8 nuevas
+agregadas), celdas de encabezado (ambos bloques) confirmadas con el
+nombre/serial/maintenance name correctos por estación.
