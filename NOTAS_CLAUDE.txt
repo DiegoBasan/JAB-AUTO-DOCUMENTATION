@@ -1318,3 +1318,25 @@ tablas Anexo A + firmas + tabla de acciones.
 Se sobrescribieron en el repo los 16 .xlsx (page_setup actualizado) y
 16 .pdf (3 páginas) en "Revalidacion Moose Scorpion Gecko/Validacion
 Maquina Segura/". Commit 8a0895e en main.
+
+19. PDF de Validación de Máquina Segura -- cambio a A4 vertical (supersede
+   la 18, que era Carta horizontal).
+Usuario pidió cambiar a orientación vertical, papel A4 (tamaño típico en
+México) en lugar de Carta horizontal, porque el horizontal ocupaba
+muchas celdas a lo ancho.
+BUG nuevo encontrado al cambiar de orientación: la plantilla original
+("16-HS80-8000-00010-I Validacion Maquina Segura.xlsx") trae saltos de
+página MANUALES (man=True) en la hoja "Check List SME" en las filas 57
+y 107 (ws.row_breaks). Estos saltos manuales se respetan SIEMPRE sin
+importar fitToHeight/fitToPage, y en A4 vertical producían 2 páginas
+casi en blanco extra (5 páginas en vez de 3). Fix: limpiar
+ws.row_breaks = RowBreak() y ws.col_breaks = ColBreak() (openpyxl) antes
+de guardar, junto con el fitToHeight explícito de siempre.
+Config final: orientation='portrait', paperSize=PAPERSIZE_A4,
+fitToWidth=1, fitToHeight={'Check List EHS':1,'Check List SME':2},
+scale=None, fitToPage=True, row_breaks/col_breaks limpios.
+Resultado: 16/16 estaciones a 3 páginas A4 vertical, verificado con
+pdfinfo (Page size 595.276 x 841.89 pts = A4) y visualmente sin páginas
+en blanco.
+Script: scratchpad/validacion_pdf/regen_a4_portrait.py (reemplaza a
+regen_compact_pdf.py para esta corrección). Commit ab7dc76 en main.
