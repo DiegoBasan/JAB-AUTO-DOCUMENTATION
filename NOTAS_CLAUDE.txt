@@ -1301,3 +1301,20 @@ Script actualizado: scratchpad/validacion_pdf/regen_compact_pdf.py
 (reemplaza a rename_and_pdf.py para esta corrección -- reaplica el
 page_setup compacto a los 16 .xlsx ya renombrados "MS_*.xlsx" y regenera
 sus 16 PDF).
+
+18. PDF de Validación de Máquina Segura -- config FINAL: Carta (Letter),
+   3 páginas (supersede la 17b de 6 páginas).
+Usuario rechazó explícitamente Tabloid/11x17 (no es tamaño típico de
+impresora de oficina) y pidió en su lugar escalar/reducir fuente en
+papel Carta normal para llegar a 3 páginas.
+Config final en regen_compact_pdf.py: fitToHeight = {'Check List EHS': 1,
+'Check List SME': 2}, fitToWidth=1, scale=None, paperSize=PAPERSIZE_LETTER,
+orientation='landscape', sheet_properties.pageSetUpPr.fitToPage=True.
+Resultado: 16/16 estaciones a 3 páginas exactas, verificado con pdfinfo
+y visualmente (pdftoppm 200dpi + lectura de cada página) sin páginas en
+blanco: pág.1 = Check List EHS completo, pág.2 = Check List SME sección 1
++ segundo bloque de encabezado repetido, pág.3 = las 8 fotos (B71+B91) +
+tablas Anexo A + firmas + tabla de acciones.
+Se sobrescribieron en el repo los 16 .xlsx (page_setup actualizado) y
+16 .pdf (3 páginas) en "Revalidacion Moose Scorpion Gecko/Validacion
+Maquina Segura/". Commit 8a0895e en main.
