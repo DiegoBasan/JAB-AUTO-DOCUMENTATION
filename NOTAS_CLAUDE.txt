@@ -1249,3 +1249,55 @@ estación, para AMBOS el .xlsx y el .pdf -- ej. "MS_Front_Assy_Scorpion.xlsx"
 Script reutilizable: scratchpad/validacion_pdf/rename_and_pdf.py --
 automatiza todo el flujo (landscape + quitar hoja3 + ssconvert + renombrar)
 para cualquier lote futuro de archivos "Validacion Maquina Segura".
+
+-----------------------------------------------------------------------------
+17b. CORRECCIÓN: el PDF compacto de "Validación de Máquina Segura" quedó
+     en 28 páginas con muchas en blanco -- causa real y fix
+-----------------------------------------------------------------------------
+El usuario esperaba ~4 páginas y reportó un "bug" de páginas en blanco.
+Diagnóstico: NO era un bug de contenido faltante -- `fitToHeight=0`
+("automático", deja fluir la altura) hace que gnumeric calcule los saltos
+de página según la altura acumulada real de las filas, y como el
+checklist tiene filas con mucho texto bilingüe intercaladas con filas MUY
+altas casi vacías (ej. la sección de firmas al final, o la fila donde
+vive el bloque combinado de fotos B71:U90 que por sí sola mide 20 filas
+de alto), el corte de página cae justo después de una sección densa,
+dejando el resto de una fila alta casi vacía como página completa
+(aunque NO estaba 100% en blanco siempre -- algunas "páginas en blanco"
+detectadas con pdftotext resultaron tener contenido real pero basado en
+imágenes/tablas sin texto extraíble, como "Anexo A Requerimientos" -- ver
+con pdftoppm + leer el PNG, NUNCA confiar solo en pdftotext para decidir
+si una página de un PDF con imágenes está vacía).
+
+FIX: en vez de `fitToHeight=0` (automático/sin límite), fijar un número
+EXPLÍCITO de páginas de alto por hoja -- esto fuerza a gnumeric a
+calcular un factor de escala único que reparte el contenido real entre
+exactamente ese número de páginas, eliminando los saltos de página
+"huérfanos" que dejaban casi toda una página en blanco:
+  Check List EHS -> fitToHeight=2
+  Check List SME -> fitToHeight=4 (incluye los 2 bloques de fotos)
+Combinado con fitToWidth=1 (sin cambios) y
+`ws.sheet_properties.pageSetUpPr.fitToPage = True`. Resultado: 6 páginas
+totales por estación (2+4), CERO páginas en blanco, texto perfectamente
+legible a simple vista, ancho completo aprovechado -- gran mejora sobre
+las 28 páginas (con huecos) del primer intento y MUY cerca de las ~4 que
+esperaba el usuario (quedó en 6 por el volumen real de contenido: 33
+ítems bilingües + 2 bloques de 4 fotos cada uno + firmas + tabla de
+acciones -- comprimirlo a 4 páginas exactas habría requerido una fuente
+notablemente más pequeña, se priorizó legibilidad). Si el usuario pide
+aun menos páginas, la siguiente palanca es bajar más el fitToHeight (ej.
+EHS=1, SME=3) a costa de letra más chica -- probar visualmente con
+pdftoppm antes de generar el lote completo, NUNCA asumir que bajar el
+número es gratis en legibilidad.
+
+Patrón de validación que hay que seguir SIEMPRE que se toque este PDF:
+1. Generar con ssconvert.
+2. `pdfinfo salida.pdf` para contar páginas.
+3. `pdftoppm -r 150 -png salida.pdf preview` y LEER (Read tool, visual)
+   cada página del PDF generado antes de entregarlo o de multiplicar el
+   cambio a las 16 estaciones -- pdftotext NO es confiable para detectar
+   páginas vacías en documentos con tablas/imágenes sin texto.
+Script actualizado: scratchpad/validacion_pdf/regen_compact_pdf.py
+(reemplaza a rename_and_pdf.py para esta corrección -- reaplica el
+page_setup compacto a los 16 .xlsx ya renombrados "MS_*.xlsx" y regenera
+sus 16 PDF).
