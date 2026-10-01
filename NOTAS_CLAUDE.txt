@@ -1340,3 +1340,13 @@ pdfinfo (Page size 595.276 x 841.89 pts = A4) y visualmente sin páginas
 en blanco.
 Script: scratchpad/validacion_pdf/regen_a4_portrait.py (reemplaza a
 regen_compact_pdf.py para esta corrección). Commit ab7dc76 en main.
+
+20. PDF combinado ("machote") de las 16 Validaciones de Maquina Segura.
+Se generó MS_TODAS_Validacion_Maquina_Segura.pdf uniendo los 16 PDF
+individuales (ya en A4 vertical, 3 páginas c/u, ver sección 19) con
+`pdfunite` en orden alfabético por nombre de estación. Resultado: 48
+páginas. Verificado visualmente el corte entre estación 1 y 2 (páginas
+3->4), sin errores de unión.
+Archivo: "Revalidacion Moose Scorpion Gecko/Validacion Maquina Segura/
+MS_TODAS_Validacion_Maquina_Segura.pdf" (~52 MB). Commit c0e57f5 en main
+(GitHub avisó que supera 50MB recomendado, pero el push sí se completó).
