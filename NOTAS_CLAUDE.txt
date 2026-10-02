@@ -1434,3 +1434,28 @@ merge de 48 páginas y el merge de solo página 3
 Script: scratchpad/validacion_pdf/add_genericas.py. Se regeneraron
 los 16 PDF, el merge de 48 páginas y el merge de solo página 3.
 Commit 426e53e en main.
+
+25. Reestructuración final de fotos por familia (supersede diseño de
+   la sección 23).
+Moose/Scorpion (8 estaciones): primera celda (B71, guardas/items 5-7)
+queda VACÍA en TODAS, incluyendo Final Assy Moose. Segunda celda (B91,
+interlocks/items 8-15) = paro de emergencia + switch genéricos
+(GENERICO PARO EMERGENCIA CLOSEUP.png, GENERICO SWITCH PRINCIPAL
+LOTO.png) en las 8, más la foto de cortina (STTOR CORTINAS DE ESE
+PISTON.png) SOLO en Final Assy Moose (es la única que la tenía y el
+usuario confirmó mantenerla ahí).
+Gecko (8 estaciones): primera celda (B71) ahora tiene 2 fotos NUEVAS
+proporcionadas por el usuario: imagenes/GECKO CORTINA JAULA
+SEGURIDAD.png (jaula/cortina de cuarto limpio vista exterior) e
+imagenes/GECKO BISAGRA INTERLOCK CLOSEUP.png (acercamiento a bisagra/
+interlock). Segunda celda (B91) SIN CAMBIOS: cortina+switch auto
+manto+paro en 6 estaciones, switch+paro en Gasket y Cartridge Attach
+Gecko (excepción ya existente, confirmada que se mantiene).
+Se redujo target_px de 520 a 460 en add_photo_grid para evitar que el
+bloque final de firmas quedara cortado en la página 3 (reportado por
+el usuario). Verificado visualmente en los 4 casos (sttor con/sin
+cortina, gecko con/sin cortina): 3 páginas por estación, sin cortes,
+firmas completas al final.
+Script: scratchpad/validacion_pdf/final_rebuild.py. Se regeneraron
+los 16 PDF, el merge de 48 páginas y el merge de solo página 3.
+Commit 66f69a5 en main.
