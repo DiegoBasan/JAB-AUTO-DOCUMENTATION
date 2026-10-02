@@ -1350,3 +1350,29 @@ páginas. Verificado visualmente el corte entre estación 1 y 2 (páginas
 Archivo: "Revalidacion Moose Scorpion Gecko/Validacion Maquina Segura/
 MS_TODAS_Validacion_Maquina_Segura.pdf" (~52 MB). Commit c0e57f5 en main
 (GitHub avisó que supera 50MB recomendado, pero el push sí se completó).
+
+21. Corrección: bloque de fotos "GUARDAS" (B71) solo con guardas reales.
+La celda B71 de "Check List SME" pide fotos de "guardas revisadas"
+pero antes el bloque mezclaba fotos que no son guardas (paro de
+emergencia, cortinas, switch principal) -- esas en realidad caen en
+el bloque B91 (interlocks/cortinas/sensores/paros, items 8-15). Se
+corrigió:
+- B71 (guardas, items 1-3 "GUARDAS/GUARDS"): solo fotos de cubiertas/
+  guardas fisicas.
+  Moose/Scorpion: STTOR MASCARA CERRADA, STTOR FEEDER TORNILLOS CON
+  GUARDA, STTOR PISTON CON MASCARA CERRADA, STTOR PISTON DONDE LO
+  TAPA LA MASCARA.
+  Gecko: GECKO FEEDER TORNILLOS CON GUARDA, GECKO GABINETE ELECTRICO
+  (unicas 2 fotos de guarda fisica disponibles para esta familia; se
+  dejaron 2 espacios en blanco por falta de mas fotos genuinas de
+  guarda en el banco de imagenes de Gecko).
+- B91 (interlocks/paros): recibe las fotos que se sacaron de B71
+  (paro de emergencia, switch principal/auto manto) + cortinas donde
+  aplica, respetando la excepcion de 9 estaciones sin foto de
+  cortinas (seccion 20 de estas notas).
+Script: scratchpad/validacion_pdf/fix_guardas.py (reemplaza los
+scripts anteriores de fotos).
+También se generó MS_SOLO_PAGINA3_TODAS.pdf: combina SOLO la tercera
+hoja (fotos+anexos+firmas) de las 16 estaciones en un PDF de 16
+páginas, para revisión rápida de únicamente las fotos corregidas.
+Commit eeb41f3 en main.
