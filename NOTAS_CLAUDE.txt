@@ -1376,3 +1376,23 @@ También se generó MS_SOLO_PAGINA3_TODAS.pdf: combina SOLO la tercera
 hoja (fotos+anexos+firmas) de las 16 estaciones en un PDF de 16
 páginas, para revisión rápida de únicamente las fotos corregidas.
 Commit eeb41f3 en main.
+
+22. B91 (interlocks/sensores) ajustado a SOLO dispositivos de seguridad.
+Tras la correccion de B71 (sección 21), el usuario pidió que B91
+tampoco tenga fotos de "guardas o cosas así", solo dispositivos de
+seguridad genuinos. Se quitó:
+- STTOR SWITCH PRINCIPAL Y SISTEMA FRL.png (switch de energia/sistema
+  neumatico, no es un "dispositivo de seguridad")
+- STTOR PISTON DEL CORTADOR QUE OCUPA CORTINAS.png (no muestra un
+  dispositivo, es una foto de mecanismo)
+- GECKO POWER SWITCH.png (switch general de encendido)
+B91 queda así:
+  Moose/Scorpion (con cortina): cortina de seguridad + paro de
+  emergencia (2 fotos). Sin cortina (9 excepciones ya conocidas):
+  solo paro de emergencia (1 foto).
+  Gecko (con cortina): cortina de seguridad + switch auto manto
+  (interlock) + paro de emergencia (3 fotos). Sin cortina: switch
+  auto manto + paro de emergencia (2 fotos).
+Script: scratchpad/validacion_pdf/fix_dispositivos.py. Se
+regeneraron los 16 PDF, el merge de 48 paginas y el merge de solo
+pagina 3 (MS_SOLO_PAGINA3_TODAS.pdf). Commit 83aadb5 en main.
