@@ -1396,3 +1396,24 @@ B91 queda así:
 Script: scratchpad/validacion_pdf/fix_dispositivos.py. Se
 regeneraron los 16 PDF, el merge de 48 paginas y el merge de solo
 pagina 3 (MS_SOLO_PAGINA3_TODAS.pdf). Commit 83aadb5 en main.
+
+23. Ambos bloques de fotos (B71 guardas y B91 interlocks) ahora SOLO
+   dispositivos de seguridad -- se eliminó el concepto de "guardas" por
+   completo (supersede secciones 21 y 22).
+El usuario aclaró que no quiere NINGUNA foto de guarda/mascara/feeder/
+gabinete en ningún bloque, solo: cortinas, paros de emergencia,
+switches/interlocks de seguridad. Se usa el MISMO set de fotos en
+ambos bloques (B71 y B91) porque no hay más fotos distintas de
+dispositivos de seguridad disponibles por familia:
+  Moose/Scorpion (con cortina, solo Final Assy Moose): cortina +
+  paro de emergencia (2 fotos, repetidas en B71 y B91).
+  Moose/Scorpion (sin cortina, 7 estaciones): solo paro de
+  emergencia (1 foto, repetida en ambos bloques).
+  Gecko (con cortina, 6 estaciones): cortina + switch auto manto
+  (interlock) + paro de emergencia (3 fotos).
+  Gecko (sin cortina, Gasket y Cartridge Attach): switch auto manto +
+  paro de emergencia (2 fotos).
+Script: scratchpad/validacion_pdf/fix_solo_dispositivos.py (reemplaza
+fix_guardas.py y fix_dispositivos.py). Se regeneraron los 16 PDF, el
+merge de 48 páginas y el merge de solo página 3
+(MS_SOLO_PAGINA3_TODAS.pdf). Commit 34f69d9 en main.
