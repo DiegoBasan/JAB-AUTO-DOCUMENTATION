@@ -1528,3 +1528,23 @@ estaciones sin cortina (Gasket, Cartridge) sí cupieron normal en
 Script: scratchpad/validacion_pdf/mover_genericas_gecko.py. Se
 regeneraron los 8 PDF de Gecko, el merge de 48 páginas y el merge de
 solo página 3. Commit 9fda7a3 en main.
+
+29. PDF de "Check List EHS fixtura estacion" (el 3er libro del template,
+   antes solo usado para EHS+SME) para Dogbone Scorpion y Final Assy
+   Scorpion.
+Esta hoja (dims A1:AB77) tiene su propio bloque de cabecera: E4=nombre
+estación, E5=proyecto/línea, Q4=nombre del equipo, Q5=IDs de los
+equipos (merge Q5:U8), Q11=revisado por EHS, Q12=responsable del
+equipo/estación. Originalmente venía con fitToHeight=4 (4 páginas) --
+se comprimió igual que las otras hojas: fitToWidth=1, fitToHeight=1,
+A4 vertical, fitToPage=True, sin saltos de página manuales (esta hoja
+no tenía ninguno). Con eso cabe en 1 sola página por estación.
+Datos usados: PROYECTO="John Deere / 202", EHS_REVIEWER="Luis
+Arellano", OWNER="Javier Villagran" (mismos valores que
+build_validacion.py), IDs: Dogbone Scorpion=JA100924-07, Final Assy
+Scorpion=JA100924-06.
+Resultado: Fixturas_Dogbone_y_FinalAssy_Scorpion.pdf, 2 páginas (una
+por estación), verificado visualmente completo y legible.
+Archivo en "Revalidacion Moose Scorpion Gecko/Validacion Maquina
+Segura/Fixturas/". Script: scratchpad/validacion_pdf/fixturas_2est.py.
+Commit b139e17 en main.
