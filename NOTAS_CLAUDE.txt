@@ -1417,3 +1417,20 @@ Script: scratchpad/validacion_pdf/fix_solo_dispositivos.py (reemplaza
 fix_guardas.py y fix_dispositivos.py). Se regeneraron los 16 PDF, el
 merge de 48 páginas y el merge de solo página 3
 (MS_SOLO_PAGINA3_TODAS.pdf). Commit 34f69d9 en main.
+
+24. Se agregaron 2 fotos genéricas en las 16 estaciones de Validacion
+   Maquina Segura: paro de emergencia en close-up y switch principal
+   JABIL con bloqueo (imagenes/GENERICO PARO EMERGENCIA CLOSEUP.png,
+   imagenes/GENERICO SWITCH PRINCIPAL LOTO.png), subidas por el
+   usuario. Se insertaron en el primer espacio libre de cada bloque de
+   fotos (B71 guardas / B91 interlocks) por estación, detectado
+   dinámicamente revisando qué posiciones de la grid ya estaban
+   ocupadas (occupied = set de anchors existentes), para no tapar
+   ninguna foto ya puesta. Resultado: todas las 16 estaciones ya
+   tienen foto de paro de emergencia (ya la tenían) + ahora también
+   foto de switch genérico, sin overlaps, verificado visualmente en
+   los 3 casos distintos (sttor sin cortina, sttor con cortina/Final
+   Assy Moose, gecko con cortina).
+Script: scratchpad/validacion_pdf/add_genericas.py. Se regeneraron
+los 16 PDF, el merge de 48 páginas y el merge de solo página 3.
+Commit 426e53e en main.
