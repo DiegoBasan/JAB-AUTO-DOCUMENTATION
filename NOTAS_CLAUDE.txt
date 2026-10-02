@@ -1459,3 +1459,46 @@ firmas completas al final.
 Script: scratchpad/validacion_pdf/final_rebuild.py. Se regeneraron
 los 16 PDF, el merge de 48 páginas y el merge de solo página 3.
 Commit 66f69a5 en main.
+
+26. CAUSA RAÍZ encontrada y corregida: sección final (acciones/firmas)
+   se veía cortada/incompleta en el PDF -- y texto de pie de página no
+   deseado.
+Diagnóstico: el template original ("plantillas/16-HS80-8000-00010-I
+Validacion Maquina Segura.xlsx") tiene en la hoja "Check List SME" los
+4 encabezados de firma ("1 Responsable SME de Ingenieria / SME
+responsable", "2 Responsable del Equipo / Equipment responsable",
+"3 Representantes de EHS / EHS Representatives", "4 Responsable del
+área / Area responsable") y 2 de las 4 líneas "Nombre, Firma y Fecha"
+(columnas 2 y 3) almacenados como TEXTBOXES FLOTANTES (xdr:sp /
+oneCellAnchor en xl/drawings/drawing2.xml), NO como texto de celda.
+openpyxl NO preserva shapes/textboxes al hacer load_workbook()+save()
+-- solo re-serializa imágenes (xdr:pic) que están en ws._images. Esto
+significa que CADA VEZ que hemos insertado fotos vía openpyxl (desde
+la primera construcción con build_validacion.py) estos 4 labels se
+perdían silenciosamente. Verificado comparando conteo de <xdr:sp> en
+drawing1/2/3.xml: template original=1 cada uno, archivos generados=0.
+Fix aplicado (scratchpad/validacion_pdf/fix_firmas_footer.py +
+fix_col3_width.py): se reescriben esos 4 encabezados + las 2 líneas de
+firma como texto de CELDA real (no shape), con merges propios y borde
+inferior simulando la línea de firma:
+  B152 (ya existía merge) = "1 Responsable SME de Ingenieria..."
+  F152:H152 (nuevo merge) = "2 Responsable del Equipo..."
+  I152:P152 (nuevo merge, CORREGIDO de un primer intento fallido con
+    J152:L152 que era demasiado angosto -- columnas J y L miden solo
+    ~1.6-1.9 de ancho, causando texto cortado/encimado) = "3
+    Representantes de EHS..."
+  Q152 (ya existía merge) = "4 Responsable del área..."
+  F158:H158 y I158:P158 (nuevos merges) = "Nombre, Firma y Fecha..."
+  con borde inferior en la fila 157 simulando la línea.
+Esto es un fix GENÉRICO para cualquier futura inserción de imágenes:
+si se vuelve a tocar el archivo con openpyxl, este texto de celda SÍ
+sobrevive (a diferencia del textbox original), así que no se debe
+volver a perder.
+Además se quitó ws.oddFooter.right (texto "Tiempo de retención en el
+punto de origen: 3 años / archivo muerto: N/A / Electrónico") por
+pedido del usuario -- queda solo el número de documento en el pie de
+página (oddFooter.left).
+Se regeneraron los 16 PDF, el merge de 48 páginas y el merge de solo
+página 3. Verificado visualmente en Moose/Scorpion y Gecko: las 4
+columnas de firma completas y bien distribuidas, sin texto cortado.
+Commit 61a0256 en main.
