@@ -1502,3 +1502,15 @@ Se regeneraron los 16 PDF, el merge de 48 páginas y el merge de solo
 página 3. Verificado visualmente en Moose/Scorpion y Gecko: las 4
 columnas de firma completas y bien distribuidas, sin texto cortado.
 Commit 61a0256 en main.
+
+27. Agregadas fotos genéricas de paro de emergencia y switch también en
+   las 8 estaciones Gecko (antes solo estaban en Moose/Scorpion).
+Se insertaron en el espacio libre de B71 (posiciones (1,80) y (11,80),
+debajo de las 2 fotos nuevas de jaula/bisagra puestas en la sección 25)
+para las 8 estaciones Gecko, sin modificar B91 (que sigue con
+cortina+switch auto manto+paro de familia, igual que antes). No hubo
+traslape porque esas posiciones ya estaban libres -- no fue necesario
+mover nada manualmente.
+Script: scratchpad/validacion_pdf/add_genericas_gecko.py. Se
+regeneraron los 8 PDF de Gecko, el merge de 48 páginas y el merge de
+solo página 3. Commit 80e5787 en main.
