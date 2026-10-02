@@ -1514,3 +1514,17 @@ mover nada manualmente.
 Script: scratchpad/validacion_pdf/add_genericas_gecko.py. Se
 regeneraron los 8 PDF de Gecko, el merge de 48 páginas y el merge de
 solo página 3. Commit 80e5787 en main.
+
+28. Paro/switch genéricos de Gecko movidos de B71 a B91 (supersede
+   sección 27).
+B71 vuelve a tener SOLO las 2 fotos propias de Gecko (jaula + bisagra
+interlock). El paro y switch genéricos se movieron a B91, junto con
+cortina+switch auto manto+paro de familia. Las 6 estaciones Gecko con
+cortina solo tenían 1 espacio libre en B91 (4 posiciones de grid ya
+tenían 3 ocupadas) -- se agregó una fila extra (row 104, dentro de la
+misma celda combinada B91:U106) para que quepan las 5 fotos. Las 2
+estaciones sin cortina (Gasket, Cartridge) sí cupieron normal en
+(1,98)/(11,98).
+Script: scratchpad/validacion_pdf/mover_genericas_gecko.py. Se
+regeneraron los 8 PDF de Gecko, el merge de 48 páginas y el merge de
+solo página 3. Commit 9fda7a3 en main.
