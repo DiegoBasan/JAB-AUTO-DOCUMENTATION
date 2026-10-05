@@ -1548,3 +1548,51 @@ por estación), verificado visualmente completo y legible.
 Archivo en "Revalidacion Moose Scorpion Gecko/Validacion Maquina
 Segura/Fixturas/". Script: scratchpad/validacion_pdf/fixturas_2est.py.
 Commit b139e17 en main.
+
+30. RA_InfurrowElk y RA_Kasalis reconstruidos con el mismo nivel de
+   detalle que RA_Moose_Scorpion/RA_GECKO (sección 15: ra_builder.py,
+   un componente de mantenimiento por fila, RR siempre verde).
+Antes de tocar nada se extrajo LISTS completo del RA_Generador.html en
+vivo con Playwright (scratchpad/ra_kasalis_infurrow/dump_lists2.js ->
+full_lists.json) para validar cualquier combo categoria/riesgo/
+consecuencia/control nuevo -- confirmó la categoría "Químicos" con
+riesgo "Irritantes" (consecuencias: Dermatitis/Irritación ocular/Tos/
+Rinitis, control: Guantes/ventilación), usado para el riesgo de
+contacto con DELO en Kasalis.
+
+RA_InfurrowElk.xlsx (REVALIDACION INFURROW ELK KASALIS/): se
+preservaron las 17 filas reales que el usuario ya había corregido
+manualmente en sesión anterior (mismo texto EPP "Bata/gorro de cuarto
+limpio (cleanroom)...", mismos documentos reales 16-PE40-6518-00084 /
+16-PE40-6518-00010 / 16-PE40-6518-00011 / 16-ME40-3018-020XX) y se
+agregaron 12 filas nuevas (mantenimiento mecánico desglosado por
+componente: switch general, motor del atornillador, broca, fixtura,
+escáner/cámara, cable de alimentación; mantenimiento eléctrico:
+driver, cableado; herramientas manuales; aire comprimido; ruido;
+vibración), continuando la numeración de documento secuencial
+(...02039 en adelante). Total 29 filas.
+
+RA_Kasalis.xlsx (REVALIDACION INFURROW ELK KASALIS/, archivo NUEVO,
+reemplaza la versión de 8-9 filas de moc_2406/Old Files): 34 filas.
+Operación normal respeta la regla ya establecida (operador solo tiene
+acceso real a la estación de carga -- torna-mesa y ambos gantries
+están detrás de cortinas/guardas en ciclo automático, solo aparecen
+como riesgo de mantenimiento con interlocks desactivados). Desglose de
+mantenimiento mecánico por componente: motor/sensores de torna-mesa,
+motor ejes X/Y/Z del gantry dispensador, boquilla/bomba/cartucho de
+DELO, motor ejes X/Y/Z del gantry PnP + gripper, cámara de visión,
+sensores de límite, correa, riel lineal (16 componentes). Más
+mantenimiento neumático, eléctrico (4 componentes), cambio de modelo,
+herramientas manuales, aire comprimido, ruido. Campo "documento" = 
+16-AT40-3318-00005 en TODAS las filas (pedido explícito del usuario,
+ya establecido en la versión anterior). EPP con la redacción más
+reciente ("Traje de cuarto limpio, cofia, guantes de nitrilo,
+cubrebocas..."), con una variante adicional EPP_QUIM (guantes de
+nitrilo de manga larga + goggles químicos) para el riesgo de contacto
+con DELO.
+
+Ambos archivos verificados programáticamente (script de chequeo
+RI×factor(nivelControl) por fila): 0 filas fuera de la banda verde
+tras un ajuste (Kasalis fila de ergonomía bajó de P=3 a P=2 para
+quedar en verde). Scripts: scratchpad/ra_kasalis_infurrow/
+build_infurrowelk.py y build_kasalis.py. Commit 8d6b25d en main.
